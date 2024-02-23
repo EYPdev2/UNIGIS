@@ -84,6 +84,7 @@ namespace ActualizadorDoctosUnigis
         {
 
         }
+        //Metodo que  manda a ejecutar una funcion que se conecta a la base de datos y guarda la informacion enviada 
         private void guardar(string folio,string transaccion ,string fecha)
         {
             q.ActualizarFechaEntrega(folio, transaccion, fecha, u);

@@ -271,11 +271,15 @@ namespace ActualizadorDoctosUnigis
             Child_form.Show();
         }
 
+        // Metodo para gestionar el acceso a los formularios dependiendo el nivel de usuario
         public void activarModulo(string a)
         {
             a = a.Replace(",", "");
             char[] acceso = new char[a.Length];
             acceso = a.ToCharArray();
+
+            //0=false
+            //1=true
 
             EnvioToolStripMenuItem.Enabled = Convert.ToBoolean(Convert.ToInt32(acceso[0].ToString()));
             confirmarOrdenesToolStripMenuItem.Enabled = Convert.ToBoolean(Convert.ToInt32(acceso[1].ToString()));

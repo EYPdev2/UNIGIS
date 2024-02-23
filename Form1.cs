@@ -46,10 +46,13 @@ namespace ActualizadorDoctosUnigis
             InitializeComponent();
             this.KeyPreview = true;
             this.KeyPress += new KeyPressEventHandler(Control_KeyPress);
-            this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
+           // this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
+           
         }
 
         
+       
+
         public Form1(string u)
         {
             InitializeComponent();
@@ -57,7 +60,10 @@ namespace ActualizadorDoctosUnigis
             this.KeyPress += new KeyPressEventHandler(Control_KeyPress);
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             user = u;
+            //  this.MouseWheel += func_mouseWheel;
+
         }
+        int num;
         private void button1_Click(object sender, EventArgs e)
         { DialogResult result1 = MessageBox.Show("Deseas enviar la informacion seleccionada a Unigis una vez se envie no podra eliminarse", "Informacion ", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
             DataTable dCod = q.Cod_estab(comboBox1.SelectedItem.ToString());
@@ -584,6 +590,7 @@ namespace ActualizadorDoctosUnigis
 
         private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
+           
             //dataGridView2.DataSource = DTV;
             //dataGridView2.Sort(dataGridView2.Columns["Fecha"], ListSortDirection.Ascending);
             //SetMinMax(dataGridView2, "0");
@@ -605,6 +612,7 @@ namespace ActualizadorDoctosUnigis
 
         private void ConsultarDoctos_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
+            cmb_letra.Enabled = true;
             lbl_Actualizando.Visible = false;
             comboBox1.Enabled = true;
             try
@@ -905,7 +913,7 @@ namespace ActualizadorDoctosUnigis
         {
 
         }
-
+        //metodo que crea colunmas donde se almacena la informacion del pick up
         public DataTable validar_Pickup (List<object> doc)
         {
             DataTable DTP = new DataTable();
@@ -978,6 +986,7 @@ namespace ActualizadorDoctosUnigis
             }
             return DTP;
         }
+        //valida si el documento es de tipo pick up
         public void agregarPickUP(DataTable dtp,string delivery,string pickup, string tipo)
         {
             string sql = "";
@@ -1017,7 +1026,7 @@ namespace ActualizadorDoctosUnigis
 
     
         public DataTable EstabUser(string U,DataTable dt)
-        {
+         {
             DataTable du;
             DataTable dtX=new DataTable();
             DataColumn dc = new DataColumn();
@@ -1212,6 +1221,56 @@ namespace ActualizadorDoctosUnigis
         private void label2_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void trackBar1_ValueChanged(object sender, EventArgs e)
+        {
+          
+              {
+
+              
+               }
+
+        }
+
+       
+
+       
+
+        private void trackBar1_ValueChanged_1(object sender, EventArgs e)
+        {
+
+           
+        }
+
+        private void button3_Click_1(object sender, EventArgs e)
+        {
+           
+            
+
+
+        }
+
+       
+
+        private void trackBar1_Scroll(object sender, EventArgs e)
+        {
+            
+           
+        }
+
+        private void comboBox2_SelectedIndexChanged(object sender, EventArgs e)
+        {
+                
+                  int size = int.Parse(cmb_letra.Text);
+
+
+                 // SetMinMax(dataGridView1, textBox1.Text);
+
+                  dataGridView1.Font = new Font(dataGridView1.Font.Name, size, dataGridView1.Font.Style);
+                  dataGridView1.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
+                   DataGridViewColumn col = new DataGridViewColumn();
+                    col.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
         }
     }
 }

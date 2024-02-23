@@ -125,6 +125,7 @@ namespace ActualizadorDoctosUnigis
  
            
         }
+        //Metodo que calcula si el valor es maximo y minimo para setearlo 
         private void SetMinMax(DataGridView dg, String txt)
         {
             DataTable dt = new DataTable();
@@ -158,7 +159,7 @@ namespace ActualizadorDoctosUnigis
                 }
             }
         }
-
+        //Metodo que colorea las filas del datagridvied
         private void ColorCells(DataGridView dg)
         {
             DataRowView dr;
@@ -189,6 +190,7 @@ namespace ActualizadorDoctosUnigis
                 }
             }
         }
+        //Metodo de tipo color que establece el valor del color dependiendo el maximo y el minimo
         private Color GetColorFromValie(Decimal targetValue)
         {
             if (targetValue > MaxV)
@@ -328,10 +330,12 @@ namespace ActualizadorDoctosUnigis
 
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
-            if (textBox1.Text != "") {
-                // textBox1.Text = trackBar1.Value.ToString();
+            if (textBox1.Text != "")
+            {
+                 textBox1.Text = trackBar1.Value.ToString();
                 SetMinMax(dataGridView1, textBox1.Text);
-                ColorCells(dataGridView1); }
+                ColorCells(dataGridView1);
+            }
             
         }
 
@@ -390,6 +394,19 @@ namespace ActualizadorDoctosUnigis
         {
             xmlwriterOrden excel = new xmlwriterOrden();
             excel.ExportarExcel(dgv);
+        }
+
+        private void cmb_letra_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            int size = int.Parse(cmb_letra.Text);
+
+
+            // SetMinMax(dataGridView1, textBox1.Text);
+
+            dataGridView1.Font = new Font(dataGridView1.Font.Name, size, dataGridView1.Font.Style);
+            dataGridView1.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
+            DataGridViewColumn col = new DataGridViewColumn();
+            col.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
         }
     }
 }

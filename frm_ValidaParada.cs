@@ -111,6 +111,7 @@ namespace ActualizadorDoctosUnigis
 
 
         }
+        //Metodo que realiza una consulta a la web api de unigis para conusltar inoformacion de las paradas por medio de el id de viaje
         public void ObtenerParadas(string idviaje )
         {
             dtg.Clear();
@@ -289,6 +290,7 @@ namespace ActualizadorDoctosUnigis
 
         }
 
+        //Metodo que realiza una consulta a la web api de unigis para consultar  inoformacion del viaje por medio de el id de viaje
         public void consultarviaje( int viajeid)
         {
             ConsultaViajeID opr = new ConsultaViajeID();
@@ -421,6 +423,11 @@ namespace ActualizadorDoctosUnigis
 
             }
             MessageBox.Show(dt.Rows[0].ItemArray[0].ToString());
+        }
+
+        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+
         }
     }
 

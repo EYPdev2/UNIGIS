@@ -37,6 +37,7 @@ namespace ActualizadorDoctosUnigis
         {
 
         }
+        //colorea una celda dependiendo el estatus del viaje
         private void colorear(DataGridView dgv,Label lb)
         {
             foreach (DataGridViewRow row in dgv.Rows)

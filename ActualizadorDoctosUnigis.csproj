@@ -579,6 +579,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\OIP.jpeg" />
+    <Content Include="Resources\font-adjustment.png" />
+    <Content Include="Resources\searching.png" />
     <Content Include="Unigis-ico.ico" />
   </ItemGroup>
   <ItemGroup>

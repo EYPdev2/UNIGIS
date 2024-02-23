@@ -24,7 +24,11 @@ namespace ActualizadorDoctosUnigis
         {
             InitializeComponent();
             usuario = usuarioN;
+            this.MouseWheel += func_mouseWheel;
+
+           
         }
+        int num = 0;
         private void Button1_Click(object sender, EventArgs e)
         {
             if (TextBox1.Text == "")
@@ -37,8 +41,23 @@ namespace ActualizadorDoctosUnigis
             }
             
         }
+      
 
-        
+        private void func_mouseWheel(object sender,MouseEventArgs e)
+        {
+            if(e.Delta > 0)
+            {
+                num++;
+                label2.Font = new Font(label2.Font.Name, num, label2.Font.Style);
+            }
+            else
+            {
+                num--;
+                label2.Font = new Font(label2.Font.Name, num, label2.Font.Style);
+            }
+        }
+
+        //Método que valida si el usuario ha digitado el folio de lo contrario se manda de lo contrario se inserta la información en la base de datos 
         private void Guardar()
         {
             DialogResult result1 = MessageBox.Show("¿Desea Guardar la modificación?", "Informacion ", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
@@ -58,6 +77,13 @@ namespace ActualizadorDoctosUnigis
                 }
             }
 
+
+        }
+
+        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            int size = int.Parse(comboBox1.Text);
+            label2.Font = new Font(label2.Font.Name, size, label2.Font.Style);
 
         }
     }

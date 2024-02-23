@@ -44,6 +44,7 @@ namespace ActualizadorDoctosUnigis
             this.modificarFechaEntregaToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.modificarRecogeMercanciaRToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.cancelarLiquidacionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.cancelarDocumentosToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.windowsMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.newWindowToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.cascadeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -61,7 +62,6 @@ namespace ActualizadorDoctosUnigis
             this.lbl_usuario = new System.Windows.Forms.ToolStripStatusLabel();
             this.lbl_nivel = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.cancelarDocumentosToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip.SuspendLayout();
             this.statusStrip.SuspendLayout();
             this.SuspendLayout();
@@ -99,7 +99,7 @@ namespace ActualizadorDoctosUnigis
             // 
             this.EnvioToolStripMenuItem.Enabled = false;
             this.EnvioToolStripMenuItem.Name = "EnvioToolStripMenuItem";
-            this.EnvioToolStripMenuItem.Size = new System.Drawing.Size(175, 22);
+            this.EnvioToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.EnvioToolStripMenuItem.Text = "&Envio Documentos";
             this.EnvioToolStripMenuItem.Click += new System.EventHandler(this.optionsToolStripMenuItem_Click);
             // 
@@ -107,7 +107,7 @@ namespace ActualizadorDoctosUnigis
             // 
             this.confirmarOrdenesToolStripMenuItem.Enabled = false;
             this.confirmarOrdenesToolStripMenuItem.Name = "confirmarOrdenesToolStripMenuItem";
-            this.confirmarOrdenesToolStripMenuItem.Size = new System.Drawing.Size(175, 22);
+            this.confirmarOrdenesToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.confirmarOrdenesToolStripMenuItem.Text = "&Confirmar Ordenes";
             this.confirmarOrdenesToolStripMenuItem.Click += new System.EventHandler(this.confirmarOrdenesToolStripMenuItem_Click);
             // 
@@ -115,7 +115,7 @@ namespace ActualizadorDoctosUnigis
             // 
             this.validarParadasToolStripMenuItem.Enabled = false;
             this.validarParadasToolStripMenuItem.Name = "validarParadasToolStripMenuItem";
-            this.validarParadasToolStripMenuItem.Size = new System.Drawing.Size(175, 22);
+            this.validarParadasToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.validarParadasToolStripMenuItem.Text = "Validar Paradas";
             this.validarParadasToolStripMenuItem.Click += new System.EventHandler(this.validarParadasToolStripMenuItem_Click);
             // 
@@ -123,7 +123,7 @@ namespace ActualizadorDoctosUnigis
             // 
             this.liberarParadasToolStripMenuItem.Enabled = false;
             this.liberarParadasToolStripMenuItem.Name = "liberarParadasToolStripMenuItem";
-            this.liberarParadasToolStripMenuItem.Size = new System.Drawing.Size(175, 22);
+            this.liberarParadasToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.liberarParadasToolStripMenuItem.Text = "Liberar Paradas";
             this.liberarParadasToolStripMenuItem.Click += new System.EventHandler(this.liberarParadasToolStripMenuItem_Click);
             // 
@@ -132,7 +132,7 @@ namespace ActualizadorDoctosUnigis
             this.pendientesPorEmbarcarToolStripMenuItem.BackColor = System.Drawing.SystemColors.Control;
             this.pendientesPorEmbarcarToolStripMenuItem.Enabled = false;
             this.pendientesPorEmbarcarToolStripMenuItem.Name = "pendientesPorEmbarcarToolStripMenuItem";
-            this.pendientesPorEmbarcarToolStripMenuItem.Size = new System.Drawing.Size(175, 22);
+            this.pendientesPorEmbarcarToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.pendientesPorEmbarcarToolStripMenuItem.Text = "Vizualizador";
             this.pendientesPorEmbarcarToolStripMenuItem.Click += new System.EventHandler(this.pendientesPorEmbarcarToolStripMenuItem_Click);
             // 
@@ -140,7 +140,7 @@ namespace ActualizadorDoctosUnigis
             // 
             this.kGPendientesToolStripMenuItem.Enabled = false;
             this.kGPendientesToolStripMenuItem.Name = "kGPendientesToolStripMenuItem";
-            this.kGPendientesToolStripMenuItem.Size = new System.Drawing.Size(175, 22);
+            this.kGPendientesToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.kGPendientesToolStripMenuItem.Text = "KG Pendientes ";
             this.kGPendientesToolStripMenuItem.Click += new System.EventHandler(this.kGPendientesToolStripMenuItem_Click);
             // 
@@ -148,7 +148,7 @@ namespace ActualizadorDoctosUnigis
             // 
             this.valesPendienteToolStripMenuItem.Enabled = false;
             this.valesPendienteToolStripMenuItem.Name = "valesPendienteToolStripMenuItem";
-            this.valesPendienteToolStripMenuItem.Size = new System.Drawing.Size(175, 22);
+            this.valesPendienteToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.valesPendienteToolStripMenuItem.Text = "Vales Pendiente";
             this.valesPendienteToolStripMenuItem.Click += new System.EventHandler(this.valesPendienteToolStripMenuItem_Click);
             // 
@@ -187,6 +187,13 @@ namespace ActualizadorDoctosUnigis
             this.cancelarLiquidacionToolStripMenuItem.Size = new System.Drawing.Size(246, 22);
             this.cancelarLiquidacionToolStripMenuItem.Text = "Cancelar Liquidacion";
             this.cancelarLiquidacionToolStripMenuItem.Click += new System.EventHandler(this.cancelarLiquidacionToolStripMenuItem_Click);
+            // 
+            // cancelarDocumentosToolStripMenuItem
+            // 
+            this.cancelarDocumentosToolStripMenuItem.Name = "cancelarDocumentosToolStripMenuItem";
+            this.cancelarDocumentosToolStripMenuItem.Size = new System.Drawing.Size(246, 22);
+            this.cancelarDocumentosToolStripMenuItem.Text = "Cancelar Documentos";
+            this.cancelarDocumentosToolStripMenuItem.Click += new System.EventHandler(this.cancelarDocumentosToolStripMenuItem_Click);
             // 
             // windowsMenu
             // 
@@ -312,13 +319,6 @@ namespace ActualizadorDoctosUnigis
             this.lbl_nivel.Name = "lbl_nivel";
             this.lbl_nivel.Size = new System.Drawing.Size(118, 17);
             this.lbl_nivel.Text = "toolStripStatusLabel1";
-            // 
-            // cancelarDocumentosToolStripMenuItem
-            // 
-            this.cancelarDocumentosToolStripMenuItem.Name = "cancelarDocumentosToolStripMenuItem";
-            this.cancelarDocumentosToolStripMenuItem.Size = new System.Drawing.Size(246, 22);
-            this.cancelarDocumentosToolStripMenuItem.Text = "Cancelar Documentos";
-            this.cancelarDocumentosToolStripMenuItem.Click += new System.EventHandler(this.cancelarDocumentosToolStripMenuItem_Click);
             // 
             // Main
             // 

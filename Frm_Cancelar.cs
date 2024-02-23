@@ -61,6 +61,8 @@ namespace ActualizadorDoctosUnigis
 
         private void ConsultarDoctos_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
+            cmb_letra.Enabled = true;
+            button2.Enabled = true;
             btn_Enviar.Enabled = true;
          //   lbl_Actualizando.Visible = false;
             comboBox1.Enabled = true;
@@ -238,6 +240,19 @@ namespace ActualizadorDoctosUnigis
                     row.Cells[0].Value = true;
 
             }
+        }
+
+        private void cmb_letra_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            int size = int.Parse(cmb_letra.Text);
+
+
+            // SetMinMax(dataGridView1, textBox1.Text);
+
+            dataGridView1.Font = new Font(dataGridView1.Font.Name, size, dataGridView1.Font.Style);
+            dataGridView1.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
+            DataGridViewColumn col = new DataGridViewColumn();
+            col.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
         }
     }
 }

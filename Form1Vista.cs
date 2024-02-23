@@ -666,6 +666,7 @@ namespace ActualizadorDoctosUnigis
 
         private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
+            
             ActualizarVales.CancelAsync();
             //MessageBox.Show("la informacion fue cargada con exito ");
             //   btnRefrescar.Enabled = true;
@@ -685,6 +686,7 @@ namespace ActualizadorDoctosUnigis
 
         private void ConsultarDoctos_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
+            cmb_letra.Enabled = true;
             lbl_Actualizando.Visible = false;
             comboBox1.Enabled = true;
             try
@@ -1033,6 +1035,7 @@ namespace ActualizadorDoctosUnigis
             }
             return DTP;
         }
+
         public void agregarPickUP(DataTable dtp, string delivery, string pickup, string tipo)
         {
             string sql = "";
@@ -1070,7 +1073,7 @@ namespace ActualizadorDoctosUnigis
 
         }
 
-
+        //Metodo para recuperar el la informacion del usuario y almacenarla en un datable
         public DataTable EstabUser(string U, DataTable dt)
         {
             DataTable du;
@@ -1185,6 +1188,23 @@ namespace ActualizadorDoctosUnigis
                 }
             }
 
+        }
+
+       
+
+       
+
+        private void cmb_letra_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            int size = int.Parse(cmb_letra.Text);
+
+
+            // SetMinMax(dataGridView1, textBox1.Text);
+
+            dataGridView1.Font = new Font(dataGridView1.Font.Name, size, dataGridView1.Font.Style);
+            dataGridView1.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
+            DataGridViewColumn col = new DataGridViewColumn();
+            col.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
         }
     }
 }

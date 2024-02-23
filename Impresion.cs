@@ -16,6 +16,7 @@ namespace ActualizadorDoctosUnigis
             InitializeComponent();
         }
 
+        //fucion publica que genera un reporte de la herramienta crystalReport
         public Impresion(ReportDocument rp)
         {
 

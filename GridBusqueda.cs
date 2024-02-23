@@ -25,6 +25,7 @@ namespace ActualizadorDoctosUnigis
         {
             InitializeComponent();
         }
+        // Metodo que valida desde que formulario se esta solicitando la consulta de informacion 
         public GridBusqueda(TextBox t1A,TextBox t2A=null ,TextBox t3A=null)
         {
             t1 = t1A;
@@ -32,7 +33,7 @@ namespace ActualizadorDoctosUnigis
             t3 = t3A;
             InitializeComponent();
         }
-
+        // Metodo que valida desde que formulario se esta solicitando la consulta de informacion  y el usuario que esta ingresado
         public GridBusqueda(TextBox t1A, string usuario, TextBox t2A = null, TextBox t3A = null)
         {
             t1 = t1A;
@@ -139,6 +140,7 @@ namespace ActualizadorDoctosUnigis
                 }
             }
         }
+
 
         public void ValidarViaje(ObtenerRutaCompleta_Response.ObtenerRutaCompletaResponse orc)
         {

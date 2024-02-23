@@ -37,10 +37,12 @@
             this.btnRefrescar = new System.Windows.Forms.Button();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
-            this.button3 = new System.Windows.Forms.Button();
-            this.button2 = new System.Windows.Forms.Button();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.trackBar1 = new System.Windows.Forms.TrackBar();
+            this.button3 = new System.Windows.Forms.Button();
+            this.button2 = new System.Windows.Forms.Button();
+            this.cmb_letra = new System.Windows.Forms.ComboBox();
+            this.button4 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -116,6 +118,8 @@
             // 
             // splitContainer1.Panel2
             // 
+            this.splitContainer1.Panel2.Controls.Add(this.cmb_letra);
+            this.splitContainer1.Panel2.Controls.Add(this.button4);
             this.splitContainer1.Panel2.Controls.Add(this.button3);
             this.splitContainer1.Panel2.Controls.Add(this.button2);
             this.splitContainer1.Panel2.Controls.Add(this.textBox1);
@@ -125,6 +129,27 @@
             this.splitContainer1.Size = new System.Drawing.Size(287, 563);
             this.splitContainer1.SplitterDistance = 481;
             this.splitContainer1.TabIndex = 6;
+            // 
+            // textBox1
+            // 
+            this.textBox1.Location = new System.Drawing.Point(137, 33);
+            this.textBox1.Name = "textBox1";
+            this.textBox1.Size = new System.Drawing.Size(51, 20);
+            this.textBox1.TabIndex = 1;
+            this.textBox1.Text = "1000";
+            this.textBox1.TextChanged += new System.EventHandler(this.textBox1_TextChanged);
+            // 
+            // trackBar1
+            // 
+            this.trackBar1.Location = new System.Drawing.Point(12, 30);
+            this.trackBar1.Maximum = 10000;
+            this.trackBar1.Minimum = 1000;
+            this.trackBar1.Name = "trackBar1";
+            this.trackBar1.Size = new System.Drawing.Size(125, 45);
+            this.trackBar1.SmallChange = 500;
+            this.trackBar1.TabIndex = 0;
+            this.trackBar1.Value = 1000;
+            this.trackBar1.ValueChanged += new System.EventHandler(this.trackBar1_ValueChanged);
             // 
             // button3
             // 
@@ -150,26 +175,40 @@
             this.button2.UseVisualStyleBackColor = true;
             this.button2.Click += new System.EventHandler(this.button2_Click_1);
             // 
-            // textBox1
+            // cmb_letra
             // 
-            this.textBox1.Location = new System.Drawing.Point(137, 33);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(51, 20);
-            this.textBox1.TabIndex = 1;
-            this.textBox1.Text = "1000";
-            this.textBox1.TextChanged += new System.EventHandler(this.textBox1_TextChanged);
+            this.cmb_letra.FormattingEnabled = true;
+            this.cmb_letra.Items.AddRange(new object[] {
+            "12",
+            "14",
+            "16",
+            "18",
+            "20",
+            "22",
+            "24",
+            "26",
+            "28",
+            "30",
+            "40",
+            "45"});
+            this.cmb_letra.Location = new System.Drawing.Point(37, 7);
+            this.cmb_letra.Name = "cmb_letra";
+            this.cmb_letra.Size = new System.Drawing.Size(106, 21);
+            this.cmb_letra.TabIndex = 22;
+            this.cmb_letra.SelectedIndexChanged += new System.EventHandler(this.cmb_letra_SelectedIndexChanged);
             // 
-            // trackBar1
+            // button4
             // 
-            this.trackBar1.Location = new System.Drawing.Point(12, 30);
-            this.trackBar1.Maximum = 10000;
-            this.trackBar1.Minimum = 1000;
-            this.trackBar1.Name = "trackBar1";
-            this.trackBar1.Size = new System.Drawing.Size(125, 45);
-            this.trackBar1.SmallChange = 500;
-            this.trackBar1.TabIndex = 0;
-            this.trackBar1.Value = 1000;
-            this.trackBar1.ValueChanged += new System.EventHandler(this.trackBar1_ValueChanged);
+            this.button4.BackgroundImage = global::ActualizadorDoctosUnigis.Properties.Resources.font_adjustment;
+            this.button4.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.button4.Enabled = false;
+            this.button4.Location = new System.Drawing.Point(7, 6);
+            this.button4.Margin = new System.Windows.Forms.Padding(4);
+            this.button4.Name = "button4";
+            this.button4.Size = new System.Drawing.Size(23, 21);
+            this.button4.TabIndex = 21;
+            this.button4.Text = " ";
+            this.button4.UseVisualStyleBackColor = true;
             // 
             // Form6
             // 
@@ -210,5 +249,7 @@
         private System.Windows.Forms.TrackBar trackBar1;
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.Button button3;
+        private System.Windows.Forms.ComboBox cmb_letra;
+        private System.Windows.Forms.Button button4;
     }
 }
