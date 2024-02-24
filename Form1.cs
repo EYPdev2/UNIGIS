@@ -16,9 +16,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml.Linq;
-using ClosedXML.Excel;
 using System.Diagnostics;
 using System.IO;
+using ClosedXML.Excel;
 
 namespace ActualizadorDoctosUnigis
 {
@@ -773,7 +773,8 @@ namespace ActualizadorDoctosUnigis
                     case ("RC"):transaccion = "37";break;
                     case ("PE"):transaccion = "29";break;
                     case ("EdMaC"):transaccion = "713";break;
-                            }
+                    case ("TE"): transaccion = "35"; break;
+                }
                 q.Historico_envio(Documento, transaccion, cod_prod, fecha_doc, cantidad, fecha_actual, deposito, user, latitud, longi, fecha_entreg);
                 q.UpdatePPE(cod_prod, Documento, transaccion,cod_estab,"1");
 
