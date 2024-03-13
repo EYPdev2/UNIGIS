@@ -137,7 +137,7 @@ namespace ActualizadorDoctosUnigis.Contoller
                  
 
                 StringBuilder qry = new StringBuilder();
-                qry.Append("EYP_InsertarEmb_DETALLE");
+                qry.Append("    ");
 
                 openCon.Open();
                 string insert = qry.ToString();
