@@ -16,7 +16,10 @@ namespace ActualizadorDoctosUnigis
         Qrys q = new Qrys();
         Libreria lib = new Libreria();
         string[] t = new string[5];
-        string u ;
+        string u;
+        string[] r = new string[15];
+        string[] s = new string[100];
+
         public frm_RM()
         {
             InitializeComponent();
@@ -38,20 +41,38 @@ namespace ActualizadorDoctosUnigis
 
         private void frm_FechaEntrega_Load(object sender, EventArgs e)
         {
-             DataTable dt= q.Consultar("Select  distinct t.nombre,t.transaccion from facremtick f inner Join transacciones t on t.transaccion = f.transaccion");
+            DataTable dt= q.Consultar("Select distinct t.nombre,t.transaccion from facremtick f inner Join transacciones t on t.transaccion = f.transaccion");
+
             int i = 0; 
             foreach(DataRow row in dt.Rows)
             {
-                cmb_tipoD.Items.Add(row[0].ToString());
-                t[i] = row[1].ToString();
+                cmb_tipoD.Items.Add(row[0].ToString().Trim());
+                t[i] = row[1].ToString().Trim();
                 i++;
-            }   
+            }
 
+            i = 0;
+            var razones = q.Consultar("exec [dbo].[EyP_Razon_Cambios_RM]");
+            foreach (DataRow razon in (InternalDataCollectionBase)razones.Rows)
+            {
+                Razon.Items.Add(razon[1]);
+                r[i] = razon[0].ToString();
+                i++;
+            }
+
+            i = 0;
+            var solitantes = q.Consultar("exec [dbo].[EyP_USUARIOS_RM]");
+            foreach (DataRow solicita in (InternalDataCollectionBase)solitantes.Rows)
+            {
+                Solicita.Items.Add(solicita[1].ToString().Trim());
+                s[i] = solicita[0].ToString();
+                i++;
+            }
         }
 
         private void btn_Actualizar_Click(object sender, EventArgs e)
         {
-            if (txt_folio.Text!="" && cmb_tipoD.SelectedItem.ToString() != "")
+            if (txt_folio.Text != "" && cmb_tipoD.SelectedItem != null)
             {
                 try
                 {
@@ -68,12 +89,12 @@ namespace ActualizadorDoctosUnigis
                     btn_Guardar.Enabled = true;
 
                 }
-            catch
-            {
+                catch
+                {
+
+                }
 
             }
-
-        }
             else
             {
                 MessageBox.Show("Favor de Proporcionar la informacion Solicitada (Folio y Transaccion )");
@@ -85,51 +106,61 @@ namespace ActualizadorDoctosUnigis
 
         }
         //Metodo que  manda a ejecutar una funcion que se conecta a la base de datos y guarda la informacion enviada 
-        private void guardar(string folio,string transaccion ,string fecha)
+        private void guardar(
+     string folio,
+     string transaccion,
+     string fecha,
+     string solicita,
+     string razon)
         {
-            q.ActualizarFechaEntrega(folio, transaccion, fecha, u);
+            this.q.ActualizarFechaEntrega(folio, transaccion, fecha, this.u, solicita, razon);
         }
 
-        private void btn_Guardar_Click  (object sender, EventArgs e)
+        private void btn_Guardar_Click(object sender, EventArgs e)
         {
-           
-                int chk = 0;
-                int chk2 = 0;
-                if (chk_rm.Checked){
-                    chk = 1;
-                }
-                if (chk == 0)
-                {
-                    chk2 = 1;
-                }
+            if (Solicita.SelectedIndex == -1 || Razon.SelectedIndex == -1)
+            {
+                MessageBox.Show("Favor de proporcionar quién solicita el cambio y la razon del cambio.");
+                return;
+            }
 
-
-                try { 
-
-
-                //    MessageBox.Show(lib.Conexiones(txt_folio.Text).Rows[0][0].ToString());
+            try {
+                //MessageBox.Show(lib.Conexiones(txt_folio.Text).Rows[0][0].ToString());
                 //MessageBox.Show("update facremtick set recoge_mercancia ='" + chk + "' where folio='" + txt_folio.Text + "', and transaccion='" + t[cmb_tipoD.SelectedIndex] + "'") ;
-                    q.Consultar("update facremtick set recoge_mercancia ='" + chk + "' where folio='" + txt_folio.Text + "' and transaccion='" + t[cmb_tipoD.SelectedIndex] + "'", lib.Conexiones(txt_folio.Text).Rows[0][0].ToString());
-                    string y = "insert into historico_cambios(codigo, transaccion, fecha, dato, valor_anterior, valor_nuevo, usuario values('" + txt_folio.Text + "')" +
-                        ",'" + t[cmb_tipoD.SelectedIndex] + "','" + DateTime.Now.ToString("yyyy/MM/dd HH:mm") + "','Modificacion RM APP','" + chk2 + "','" + chk + "','" + u + "'";
-                    q.Consultar("insert into historico_cambios(codigo,transaccion,fecha,dato,valor_anterior,valor_nuevo,usuario) values ('"+txt_folio.Text+"'" +
-                        ",'"+t[cmb_tipoD.SelectedIndex]+"','"+DateTime.Now.ToString("yyyy/MM/dd HH:mm")+"','Modificacion RM APP','"+chk2+"','"+chk+"','"+u+"')", lib.Conexiones(txt_folio.Text).Rows[0][0].ToString());
-                    
-                    // guardar(txt_folio.Text, t[cmb_tipoD.SelectedIndex], dateTimePicker2.Value.ToString("dd/MM/yyyy HH:mm:ss"));
-                    MessageBox.Show("Actualizacion correcta del Folio: " + txt_folio.Text);
-                    txt_folio.Text = "";
-                    txt_estab.Text = "";
-                    dateTimePicker1.Value = DateTime.Now;
-                    dateTimePicker2.Value = DateTime.Now;
+                //q.Consultar("update facremtick set recoge_mercancia ='" + chk + "' where folio='" + txt_folio.Text + "' and transaccion='" + t[cmb_tipoD.SelectedIndex] + "'", lib.Conexiones(txt_folio.Text).Rows[0][0].ToString());
+                //string y = "insert into historico_cambios(codigo, transaccion, fecha, dato, valor_anterior, valor_nuevo, usuario values('" + txt_folio.Text + "')" +
+                //    ",'" + t[cmb_tipoD.SelectedIndex] + "','" + DateTime.Now.ToString("yyyy/MM/dd HH:mm") + "','Modificacion RM APP','" + chk2 + "','" + chk + "','" + u + "'";
+                //q.Consultar("insert into historico_cambios(codigo,transaccion,fecha,dato,valor_anterior,valor_nuevo,usuario) values ('"+txt_folio.Text+"'" +
+                //    ",'"+t[cmb_tipoD.SelectedIndex]+"','"+DateTime.Now.ToString("yyyy/MM/dd HH:mm")+"','Modificacion RM APP','"+chk2+"','"+chk+"','"+u+"')", lib.Conexiones(txt_folio.Text).Rows[0][0].ToString());
 
+                var folio = txt_folio.Text;
+                var transaccion = t[cmb_tipoD.SelectedIndex];
+                var rm = chk_rm.Checked ? 1 : 0;
+                var solicita = s[Solicita.SelectedIndex];
+                var razon = r[Razon.SelectedIndex];
+
+                q.Consultar($"exec EYP_UNIGIS_ACT_RM '{folio}', '{transaccion}', {rm}, '{u}', '{solicita}', '{razon}'", lib.Conexiones(txt_folio.Text).Rows[0][0].ToString());
+
+                // guardar(txt_folio.Text, t[cmb_tipoD.SelectedIndex], dateTimePicker2.Value.ToString("dd/MM/yyyy HH:mm:ss"));
+                MessageBox.Show("Actualizacion correcta del Folio: " + txt_folio.Text);
+                txt_folio.Text = "";
+                txt_estab.Text = "";
+                dateTimePicker1.Value = DateTime.Now;
+                dateTimePicker2.Value = DateTime.Now;
+                Solicita.SelectedIndex = -1;
+                Razon.SelectedIndex = -1;
+                cmb_tipoD.Text = "";
+                txt_RM.Text = "";
+                chk_rm.Checked = false;
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
             }
+
             btn_Guardar.Enabled = false;
             btn_Actualizar.Enabled = true;
-            }
+        }
                   
 
         private void lbl_fechaEntrega_Click(object sender, EventArgs e)
@@ -168,6 +199,16 @@ namespace ActualizadorDoctosUnigis
         }
 
         private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void Razon_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void prueba_TextChanged(object sender, EventArgs e)
         {
 
         }

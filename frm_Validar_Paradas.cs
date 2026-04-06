@@ -276,7 +276,7 @@ namespace ActualizadorDoctosUnigis
                     ///
                     string x = "select Deposito_Ref from EYP_Unis_parada  where IdViaje = '" + txt_viajeV.Text + "' and tipoobjeto = 'Viaje' and Estado = 'Inactivo'";
 
-                    DataTable auth = q.Consultar("select Deposito_Ref from EYP_Unis_parada  where IdViaje = '"+txt_viajeV.Text+"' and tipoobjeto = 'Viaje' and Estado = 'Inactivo'");
+                    DataTable auth = q.Consultar("select Deposito_Ref from EYP_Unis_parada  where IdViaje = '"+txt_viajeV.Text+"' and tipoobjeto = 'Viaje'  ");
 
                     if (!EstabUser(usuario, auth.Rows[0].ItemArray[0].ToString()))
                     {

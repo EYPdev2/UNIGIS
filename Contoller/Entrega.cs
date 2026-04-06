@@ -48,6 +48,8 @@ namespace ActualizadorDoctosUnigis.Contoller
                     case "EdMaC": tran = "713"; break;
                     case "FC": tran = "36"; break;
                     case "RC": tran = "37"; break;
+                    case "PE": tran = "29";break;
+                    case "TE": tran = "35"; break;
                 }
                 return tran;
             }

@@ -19,9 +19,11 @@ namespace ActualizadorDoctosUnigis
         Qrys q = new Qrys();
         string Estab = "";
         string cod_estab;
-        public Frm_Cancelar()
+        string usuario;
+        public Frm_Cancelar( string user)
         {
             InitializeComponent();
+            usuario = user;
         }
 
         private void comboBox1_SelectedValueChanged(object sender, EventArgs e)
@@ -172,7 +174,7 @@ namespace ActualizadorDoctosUnigis
                     //  DTA.Rows.RemoveAt(drLocal);
 
 
-                    q.UpdatePPE(drLocal["cod_prod"].ToString(), drLocal["folio"].ToString(), drLocal["transaccion"].ToString(), cod_estab, "0");
+                    q.UpdatePPE(drLocal["cod_prod"].ToString(), drLocal["folio"].ToString(), drLocal["transaccion"].ToString(), cod_estab, "0",usuario);
 
                 }
             }

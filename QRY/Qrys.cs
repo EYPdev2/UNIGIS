@@ -94,7 +94,7 @@ namespace ActualizadorDoctosUnigis
             qry.Append(" from movimientos_internos(nolock) mi where transaccion = '713' and folio = emb.folio) ");
             qry.Append(" when dom.calle is null then(select RTRIM(calle) + ' ' + RTRIM(num_exterior) + ', ' + RTRIM(colonia) + ', ' + RTRIM(cod_postal) + ' ' + RTRIM(pobmunedo) from clientes (nolock)c where c.cod_cte = emb.cod_cte and c.cod_cte <> '0') ");
             qry.Append("else isnull((RTRIM(dom.calle) + ' ' + RTRIM(dom.num_exterior) + ', ' + RTRIM(dom.colonia) + ', ' + RTRIM(dom.cod_postal) + ' ' + RTRIM(dom.pobmunedo)), (RTRIM(d2.calle) + ' ' + RTRIM(d2.num_exterior) + ', ' + RTRIM(d2.colonia) + ', ' + RTRIM(d2.cod_postal) + ' ' + RTRIM(d2.pobmunedo))) end as 'DIRECCION', ");
-            qry.Append("emb.desc_producto as 'NOMBRE ITEM',  emb.cant_pend  as 'CANTIDAD', emb.cod_prod as 'CODIGO ITEM', ");
+            qry.Append("emb.desc_producto as 'NOMBRE ITEM',  emb.cant_pend  as 'CANTIDAD', emb.cod_prod as 'CODIGO ITEM', emb.notas as Notas,");
             qry.Append("' ' + convert(varchar, getdate(), 103) as 'FECHA MIN ENTREGA', ' ' + convert(varchar, getdate(), 103) as 'FECHA MAX ENTREGA', ' 08:00' as 'MIN VENTANA HORARIA 1', ' 18:30' as 'MAX VENTANA HORARIA 1', ");
             qry.Append("' ' as 'MIN VENTANA HORARIA 2', ' ' as 'MAX VENTANA HORARIA 2', eys.precio_lista as 'COSTO ITEM', ");
             qry.Append("case when emb.peso_total <= 0 then 0.01 ");
@@ -535,7 +535,7 @@ namespace ActualizadorDoctosUnigis
             return dataTable;
         }
         public DataTable Consultar(string sql,string cod_estab)
-        {
+         {
             DataTable dtaux = new DataTable();
             DataTable dataTablep = new DataTable();
             SqlCommand cmd2 = new SqlCommand();
@@ -922,7 +922,7 @@ namespace ActualizadorDoctosUnigis
             dataTable.Merge(dataTable2);
             return dataTable;
         }
-        public void UpdatePPE(string cod_prod, string documento, string transaccion, string establecimiento, string status)
+        public void UpdatePPE(string cod_prod, string documento, string transaccion, string establecimiento, string status,string USUARIO ="")
         {
             DataTable dtaux = new DataTable();
             DataTable dataTablep = new DataTable();
@@ -966,8 +966,25 @@ namespace ActualizadorDoctosUnigis
                     querySaveStaff.ExecuteNonQuery();
                     openCon.Close();
                 }
-            }
 
+                if (status == "0")
+                {
+                      saveStaff = " INSERT INTO [dbo].[historico_cambios] ([codigo],[transaccion],[fecha],[dato],[valor_anterior],[valor_nuevo],[usuario])" +
+                        " values ('"+documento.Trim()+"','"+transaccion.Trim()+ "',getdate(),'Cancelacion de Envio Unigis',1,0,'"+USUARIO+"')";
+                    using (SqlCommand querySaveStaff = new SqlCommand(saveStaff))
+                    {
+                        querySaveStaff.Connection = openCon;
+
+                        openCon.Open();
+
+                        querySaveStaff.ExecuteNonQuery();
+                        openCon.Close();
+                    }
+
+
+                }
+
+            }
         }
         public DataTable Motivos(string establecimiento)
         {
@@ -1131,31 +1148,35 @@ namespace ActualizadorDoctosUnigis
             return dataTableD.Rows[0][0].ToString();
 
         }
-        public void ActualizarFechaEntrega(string folio, string transaccion,string fecha, string usuario)
+        public void ActualizarFechaEntrega(
+   string folio,
+   string transaccion,
+   string fecha,
+   string usuario,
+   string solicita,
+   string razon)
         {
-            string servidor = "192.168.8.4,9001";
-            string bdd = "BMS";
-            SqlCommand cmd = new SqlCommand();
-            DataTable dataTableD = new DataTable();
-            SqlDataAdapter sqlDA;
-            Conexion cnn = new Conexion();
-
-            cnn.conexion(servidor, bdd);
-            StringBuilder qry = new StringBuilder();
-            qry.Append("EYP_ActFechaDocto");
-            cmd.CommandText = qry.ToString();
-            cmd.Parameters.Add("@Folio", folio);
-            cmd.Parameters.Add("@Transaccion", transaccion);
-            cmd.Parameters.Add("@fecha", fecha);
-            cmd.Parameters.Add("@usuario", usuario);
-            cmd.CommandType = CommandType.StoredProcedure;
-            cmd.CommandTimeout = 0;
-            cmd.Connection = cnn.conexion(servidor, bdd);
-            cmd.Connection.Open();
-            cmd.ExecuteNonQuery();
-
-            cnn.cerrarconexion(cnn.conexion(servidor, bdd));
-
+            string server = "192.168.8.4,9001";
+            string BDD = "BMS";
+            SqlCommand sqlCommand = new SqlCommand();
+            DataTable dataTable = new DataTable();
+            Conexion conexion = new Conexion();
+            conexion.conexion(server, BDD);
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.Append("EYP_ActFechaDocto");
+            sqlCommand.CommandText = stringBuilder.ToString();
+            sqlCommand.Parameters.Add("@Folio", (object)folio);
+            sqlCommand.Parameters.Add("@Transaccion", (object)transaccion);
+            sqlCommand.Parameters.Add("@fecha", (object)fecha);
+            sqlCommand.Parameters.Add("@usuario", (object)usuario);
+            sqlCommand.Parameters.Add("@solicita", (object)solicita);
+            sqlCommand.Parameters.Add("@razon", (object)razon);
+            sqlCommand.CommandType = CommandType.StoredProcedure;
+            sqlCommand.CommandTimeout = 0;
+            sqlCommand.Connection = conexion.conexion(server, BDD);
+            sqlCommand.Connection.Open();
+            sqlCommand.ExecuteNonQuery();
+            conexion.cerrarconexion(conexion.conexion(server, BDD));
         }
 
     }

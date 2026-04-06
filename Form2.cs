@@ -1,7 +1,7 @@
 ﻿using ActualizadorDoctosUnigis.Models;
 using CrystalDecisions.ReportSource ;
 using CrystalDecisions.CrystalReports.Engine;
-using Newtonsoft.Json;
+ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -334,7 +334,7 @@ namespace ActualizadorDoctosUnigis
             //MessageBox.Show(Directory.GetCurrentDirectory() + "/R1534-UNIGIS.rpt");
              ReportDocument rp = new  ReportDocument();
             //MessageBox.Show(Directory.GetCurrentDirectory() + "/R1534.rpt") ;
-          rp.Load(Directory.GetCurrentDirectory()+ "/R1534-Unigis-Preruta.rpt");
+            rp.Load(Directory.GetCurrentDirectory()+ "/R1534-Unigis-Preruta.rpt");
             StringBuilder qry = new StringBuilder();
             DataColumn column = new DataColumn();
 
@@ -346,12 +346,12 @@ namespace ActualizadorDoctosUnigis
             if (ContainColumn("ruta", DAux)) { DAux.Columns["ruta"].ColumnName = "notasEmbarque"; }
             rp.SetDataSource(DAux);
             Impresion imp = new Impresion(rp);
-            imp.Show(); 
+            imp.Show();
 
 
 
 
-         }
+        }
 
         public void eliminarProd(ObtenerRutaCompleta_Response.ObtenerRutaCompletaResponse orc, string Doc, string prod)
         {
@@ -967,7 +967,9 @@ namespace ActualizadorDoctosUnigis
                     refrescar(orcr);
                     DAux = Productos(orcr);
                     estab_unigis = orcr.d.DepositoSalida.RefDepositoExterno.ToString();
-
+                    btn_Editar.Enabled = true;
+                            btn_guardar.Enabled = false;
+                            btn_imp.Enabled = true;
                     if (dataGridView1.DataSource != null)
                     {
                         if (orcr.d.Estado == "Confirmada")

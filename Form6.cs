@@ -43,7 +43,7 @@ namespace ActualizadorDoctosUnigis
 
         private void Form6_Load(object sender, EventArgs e)
         {
-                // timer1.Start();
+            // timer1.Start();
 
             //  timer1.Stop();
 

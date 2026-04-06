@@ -9,6 +9,7 @@ using System.Data.SqlClient;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -112,114 +113,58 @@ namespace ActualizadorDoctosUnigis
 
         }
         //Metodo que realiza una consulta a la web api de unigis para conusltar inoformacion de las paradas por medio de el id de viaje
-        public void ObtenerParadas(string idviaje )
+        public void ObtenerParadas(string idviaje)
         {
-            dtg.Clear();
-            txt_viaje.Enabled = false;
-            btn_canc.Enabled = true;
-
-           DataTable dt= q.ParadasViaje(idviaje);
-            consultarviaje(Convert.ToInt32(txt_viaje.Text));
-            foreach (DataRow dr in dt.Rows)
+            this.dtg.Clear();
+            this.txt_viaje.Enabled = false;
+            this.btn_canc.Enabled = true;
+            DataTable dataTable = this.q.ParadasViaje(idviaje);
+            this.consultarviaje(Convert.ToInt32(this.txt_viaje.Text));
+            foreach (DataRow row1 in (InternalDataCollectionBase)dataTable.Rows)
             {
-                button1.Enabled = false;
-          
-                obtenerParadas_request opr = new obtenerParadas_request();
-                opr.ApiKey = "1234";
-                opr.IdParada =Convert.ToInt32(dr.ItemArray[0].ToString());// Convert.ToInt32(txt_viaje.Text);
-                string jsonString = JsonConvert.SerializeObject(opr);
-                using (var client = new HttpClient())
+                this.button1.Enabled = false;
+                obtenerParadas_request obtenerParadasRequest = new obtenerParadas_request();
+                obtenerParadasRequest.ApiKey = "1234";
+                obtenerParadasRequest.IdParada = Convert.ToInt32(row1.ItemArray[0].ToString());
+                string content1 = JsonConvert.SerializeObject((object)obtenerParadasRequest);
+                using (HttpClient httpClient = new HttpClient())
                 {
-                    System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Ssl3;
-                    System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12;
-
-                    var endpoint = new Uri("https://grupo-eyp.unigis.com/mapi/soap/logistic/service.asmx/ConsultarParadaPorId");
-                    //var result = client.GetAsync(endpoint).Result;
-                    //var xmlR = result.Content.ReadAsStringAsync().Result;
-
-                    var paylod = new StringContent(jsonString, Encoding.UTF8, "application/json");
-                    var result = client.PostAsync(endpoint, paylod).Result.Content.ReadAsStringAsync().Result;
-                    // MessageBox.Show(result);
-
-
-                    cpr = JsonConvert.DeserializeObject<ConsultarParadaPorIdResponse>(result);
-                    
-                    Lcpr.Add(cpr);
-                    button1.Enabled = true;
-                   foreach( var subarray in cpr.d.Items)
+                    ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3;
+                    ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+                    Uri requestUri = new Uri("https://grupo-eyp.unigis.com/mapi/soap/logistic/service.asmx/ConsultarParadaPorId");
+                    StringContent content2 = new StringContent(content1, Encoding.UTF8, "application/json");
+                    this.cpr = JsonConvert.DeserializeObject<ConsultarParadaPorIdResponse>(httpClient.PostAsync(requestUri, (HttpContent)content2).Result.Content.ReadAsStringAsync().Result);
+                    this.Lcpr.Add(this.cpr);
+                    this.button1.Enabled = true;
+                    foreach (ConsultarParadaPorIdResponse.Items items in this.cpr.d.Items)
                     {
-                        
-                        DataRow row1 = dtg.NewRow();
-                      
-                         
-                        
-                        //  if (cpr.d.EstadoParada == "Validado")
-                        //{
-                            row1["IdParada"] = dr.ItemArray[0].ToString();
-                            row1["Ref.Documento"] = cpr.d.RefDocumento;
-                            row1["Producto"] = subarray.RefDocumento;
-                            
-                            if (subarray.Cantidad == 0)
+                        DataRow row2 = this.dtg.NewRow();
+                        row2["IdParada"] = (object)row1.ItemArray[0].ToString();
+                        row2["Ref.Documento"] = (object)this.cpr.d.RefDocumento;
+                        row2["Producto"] = (object)items.RefDocumento;
+                        row2["Cantidad"] = !(items.Cantidad == 0M) ? (object)items.Cantidad : (object)items.Bulto;
+                        row2["Cantidad_Entregada"] = (object)items.CantidadEntregada;
+                        row2["Estatus"] = (object)this.cpr.d.EstadoParada;
+                        int idParada = obtenerParadasRequest.IdParada;
+                        if (this.ObtenerParadaestado(idParada.ToString()).Trim() == "Entregado")
+                            row2["Cantidad_Entregada"] = !(items.Cantidad == 0M) ? (object)items.Cantidad : (object)items.Bulto;
+                        idParada = obtenerParadasRequest.IdParada;
+                        if (this.ObtenerParadaestado(idParada.ToString()) == "Entrega parcial")
                         {
-                            row1["Cantidad"] = subarray.Bulto;
-                        }else { row1["Cantidad"] = subarray.Cantidad; }
-                            
-
-                        row1["Cantidad_Entregada"] = subarray.CantidadEntregada;
-                            row1["Estatus"] = cpr.d.EstadoParada;
-                            if (ObtenerParadaestado(opr.IdParada.ToString()) == "Entregado")
-                            {
-                                
-                            if (subarray.Cantidad == 0)
-                            {
-                                row1["Cantidad_Entregada"] = subarray.Bulto;
-                            }
-                            else { row1["Cantidad_Entregada"] = subarray.Cantidad; }
-
-
+                            row2["Cantidad"] = !(items.Cantidad == 0M) ? (object)(items.Cantidad + items.CantidadEntregada) : (object)(items.Bulto + items.CantidadEntregada);
+                            row2["Cantidad"] = (object)(items.Cantidad + items.CantidadEntregada);
                         }
-
-                            if (ObtenerParadaestado(opr.IdParada.ToString()) == "Entrega parcial")
-                            {
-                            if (subarray.Cantidad == 0)
-                            {
-                                row1["Cantidad"] = subarray.Bulto + subarray.CantidadEntregada;
-                            }
-                            else { row1["Cantidad"] = subarray.Cantidad + subarray.CantidadEntregada; }
-
-                            row1["Cantidad"] = subarray.Cantidad + subarray.CantidadEntregada;
-                           
-                        
-                        }
-                        //if (cpr.d.EstadoParada != "Liberado")
-                        //{
-                            dtg.Rows.Add(row1);
-                        //}
-                        //}
-
-                        //if (q.EstatusParada(cpr.d.RefDocumento) == "Entregado")
-                        //{
-                        //     row1["Cantidad_Entregada"] = subarray.Cantidad;
-                        //}
-                        //if (q.EstatusParada(cpr.d.RefDocumento) == "Entrega parcial")
-                        //{
-                        //    row1["Cantidad"] = subarray.Cantidad + subarray.CantidadEntregada;
-                        //}
-
+                        this.dtg.Rows.Add(row2);
                     }
-                    dataGridView1.DataSource = dtg;
-                    dataGridView1.Columns["Cantidad"].Width = 60;
-                    dataGridView1.Columns["Producto"].Width = 60;
-
+                    this.dataGridView1.DataSource = (object)this.dtg;
+                    this.dataGridView1.Columns["Cantidad"].Width = 60;
+                    this.dataGridView1.Columns["Producto"].Width = 60;
                 }
-
-
-
-
             }
-              GenerarEntysal(dataGridView1);
+            this.GenerarEntysal(this.dataGridView1);
         }
- 
+
+
         public void CargarInfo(List<ConsultarParadaPorIdResponse> datos )
         {
             
@@ -241,36 +186,35 @@ namespace ActualizadorDoctosUnigis
 
         private void button1_Click(object sender, EventArgs e)
         {
-            xmlwriterParada xml = new xmlwriterParada();
-            
-            if (dataGridView1.Rows.Count == 0)
+            xmlwriterParada xmlwriterParada = new xmlwriterParada();
+            this.ObtenerParadas(this.txt_viaje.Text);
+            if (this.dataGridView1.Rows.Count == 0)
             {
-                MessageBox.Show("No Existe Nada que Actualizar");
-                return;
+                int num = (int)MessageBox.Show("No Existe Nada que Actualizar");
             }
-
-            foreach (var subarray in Lcpr)
+            else
             {
-                string xmls = (xml.stringtoxml("1234", subarray.d.RefDocumento, subarray.d.EstadoParada, Convert.ToString(subarray.d.IdViaje), "true"));
-
-                using (var client = new HttpClient())
+                foreach (ConsultarParadaPorIdResponse paradaPorIdResponse in this.Lcpr)
                 {
-                    System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Ssl3;
-                    System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12;
-
-                    var endpoint = new Uri("https://grupo-eyp.unigis.com/mapi/soap/logistic/service.asmx?op=ModificarEstadoParada");
-                    //var result = client.GetAsync(endpoint).Result;
-                    //var xmlR = result.Content.ReadAsStringAsync().Result;
-
-                    var paylod = new StringContent(xmls, Encoding.UTF8, "text/xml");
-                    var result = client.PostAsync(endpoint, paylod).Result.Content.ReadAsStringAsync().Result;
-
-                    // MessageBox.Show(result);
-                    cod_estab = ov.d.DepositoSalida.RefDepositoExterno.ToString();
-
-                    //MessageBox.Show(result);
+                    string content1 = xmlwriterParada.stringtoxml("1234", paradaPorIdResponse.d.RefDocumento, paradaPorIdResponse.d.EstadoParada, Convert.ToString(paradaPorIdResponse.d.IdViaje), "true");
+                    using (HttpClient httpClient = new HttpClient())
+                    {
+                        ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3;
+                        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+                        Uri requestUri = new Uri("https://grupo-eyp.unigis.com/mapi/soap/logistic/service.asmx?op=ModificarEstadoParada");
+                        StringContent content2 = new StringContent(content1, Encoding.UTF8, "text/xml");
+                        string result = httpClient.PostAsync(requestUri, (HttpContent)content2).Result.Content.ReadAsStringAsync().Result;
+                        this.cod_estab = this.ov.d.DepositoSalida.RefDepositoExterno.ToString();
+                    }
                 }
+                this.dtg = this.dataGridView1.DataSource as DataTable;
+                this.EmbarqueC();
+                this.dtg.Clear();
+                this.txt_viaje.Enabled = true;
+                this.btn_canc.Enabled = false;
+                this.dataGridView1.Refresh();
             }
+         
 
         
 

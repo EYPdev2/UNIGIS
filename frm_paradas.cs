@@ -27,7 +27,7 @@ namespace ActualizadorDoctosUnigis
             ObtenerPAradaid.consultar c = new ObtenerPAradaid.consultar();
                 c.ApiKey = 1234;
             c.IdParada = 20;
-            string jsonString = JsonConvert.SerializeObject(c);
+            //string jsonString = JsonConvert.SerializeObject(c);
 
             //MessageBox.Show(xml.stringtoxml(aux));
             //  string msj = xml.stringtoxml(aux).ToString();
@@ -38,11 +38,11 @@ namespace ActualizadorDoctosUnigis
                 //var result = client.GetAsync(endpoint).Result;
                 //var xmlR = result.Content.ReadAsStringAsync().Result;
 
-                var paylod = new StringContent(jsonString, Encoding.UTF8, "application/json");
-                var result = client.PostAsync(endpoint, paylod).Result.Content.ReadAsStringAsync().Result;
-                // MessageBox.Show(result);
+                //var paylod = new StringContent(jsonString, Encoding.UTF8, "application/json");
+                //var result = client.PostAsync(endpoint, paylod).Result.Content.ReadAsStringAsync().Result;
+                //// MessageBox.Show(result);
 
-                OP=JsonConvert.DeserializeObject<ObtenerPAradaid.ObtenerParadaResponse>(result);
+                //OP=JsonConvert.DeserializeObject<ObtenerPAradaid.ObtenerParadaResponse>(result);
 
 
             }

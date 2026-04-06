@@ -14,9 +14,9 @@ namespace ActualizadorDoctosUnigis
 {
     public partial class Main : Form
     {
-        public string usuario="", nivel="", nombreU = "";
+        public string usuario = "", nivel = "", nombreU = "";
         private int childFormNumber = 0;
-       
+
 
 
         public Main()
@@ -31,7 +31,7 @@ namespace ActualizadorDoctosUnigis
             childForm.Text = "Ventana " + childFormNumber++;
             childForm.Show();
         }
-       
+
 
         private void OpenFile(object sender, EventArgs e)
         {
@@ -74,12 +74,12 @@ namespace ActualizadorDoctosUnigis
 
         private void ToolBarToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            
+
         }
 
         private void StatusBarToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            
+
         }
 
         private void CascadeToolStripMenuItem_Click(object sender, EventArgs e)
@@ -114,14 +114,14 @@ namespace ActualizadorDoctosUnigis
         {
 
 
-            lbl_usuario.Text = "Usuario: " + usuario +" "+nombreU;
+            lbl_usuario.Text = "Usuario: " + usuario + " " + nombreU;
             lbl_nivel.Text = "Nivel : " + nivel;
-       
-            var MyIni = new MyProg.IniFile(Directory.GetCurrentDirectory().ToString()+"\\config.ini");
 
-            string x =MyIni.Read("N"+nivel, "ACCESOS");
-            
-            activarModulo(x);  
+            var MyIni = new MyProg.IniFile(Directory.GetCurrentDirectory().ToString() + "\\config.ini");
+
+            string x = MyIni.Read("N" + nivel, "ACCESOS");
+
+            activarModulo(x);
         }
 
         private void modificarFechaEntregaToolStripMenuItem_Click(object sender, EventArgs e)
@@ -135,16 +135,25 @@ namespace ActualizadorDoctosUnigis
 
         private void liberarParadasToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            frm_ValidaParada Child_form = new frm_ValidaParada(usuario);
-            Child_form.MdiParent = this;
-            childFormNumber += 1;
-            Child_form.Text = "Liberar Viaje" + childFormNumber;
-            Child_form.Show();
+            if (FormIsOpen("Finalizar viaje") == false)
+            {
+                frm_ValidaParada Child_form = new frm_ValidaParada(usuario);
+                Child_form.MdiParent = this;
+                //   childFormNumber += 1;
+                Child_form.Text = "Finalizar viaje";
+                Child_form.Show();
+
+            }
+
+
+
+
+
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
-            
+
         }
 
         private void menuStrip_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
@@ -154,20 +163,23 @@ namespace ActualizadorDoctosUnigis
 
         private void optionsToolStripMenuItem_Click(object sender, EventArgs e)
         {
+
+
+
             Form1 Child_form = new Form1(usuario);
             Child_form.MdiParent = this;
             childFormNumber += 1;
             Child_form.Text = "Envio Documentos " + childFormNumber;
             Child_form.Show();
             Child_form.WindowState = System.Windows.Forms.FormWindowState.Maximized;
-        
-            
-            
+
+
+
         }
 
         private void Main_FormClosing(object sender, FormClosingEventArgs e)
         {
-            Application.Exit(); 
+            Application.Exit();
         }
 
         private void windowsMenu_Click(object sender, EventArgs e)
@@ -195,13 +207,13 @@ namespace ActualizadorDoctosUnigis
             Child_form.MdiParent = this;
             childFormNumber += 1;
             Child_form.Text = "Fecha Entrega " + childFormNumber;
-            Child_form.WindowState  = System.Windows.Forms.FormWindowState.Maximized;
+            Child_form.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             Child_form.Show();
         }
 
         private void validarParadasToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            frm_Validar_Paradas Child_form = new frm_Validar_Paradas(usuario );
+            frm_Validar_Paradas Child_form = new frm_Validar_Paradas(usuario);
             Child_form.MdiParent = this;
             childFormNumber += 1;
             Child_form.Text = "Validar Viaje" + childFormNumber;
@@ -220,8 +232,8 @@ namespace ActualizadorDoctosUnigis
 
         private void kGPendientesToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Form6 Child_form = new Form6(usuario );
-         
+            Form6 Child_form = new Form6(usuario);
+
             Child_form.Show();
 
         }
@@ -235,24 +247,24 @@ namespace ActualizadorDoctosUnigis
 
         private void liquidacionToolStripMenuItem_Click(object sender, EventArgs e)
         {
-           
+
         }
 
         private void cancelarLiquidacionToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Frm_Liquidacion ChildForm=  new  Frm_Liquidacion(usuario);
+            Frm_Liquidacion ChildForm = new Frm_Liquidacion(usuario);
             ChildForm.MdiParent = this;
             childFormNumber += 1;
             ChildForm.Text = "Liquidacion" + childFormNumber;
             ChildForm.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             ChildForm.Show();
 
-     
+
         }
 
         private void cancelarDocumentosToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Frm_Cancelar ChildForm = new Frm_Cancelar();
+            Frm_Cancelar ChildForm = new Frm_Cancelar(usuario);
             ChildForm.MdiParent = this;
             childFormNumber += 1;
             ChildForm.Text = "Cancelar Documentos" + childFormNumber;
@@ -262,13 +274,23 @@ namespace ActualizadorDoctosUnigis
 
         private void confirmarOrdenesToolStripMenuItem_Click(object sender, EventArgs e)
         {
-             
-            Form2 Child_form = new Form2(usuario,nombreU,nivel);
+
+            Form2 Child_form = new Form2(usuario, nombreU, nivel);
             Child_form.MdiParent = this;
             childFormNumber += 1;
             Child_form.Text = "Confirmar Ordenes " + childFormNumber;
             Child_form.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             Child_form.Show();
+        }
+
+        private void modificarPickuoToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Relacion_Pickup2 frmPickUp = new Relacion_Pickup2(this.usuario);
+            frmPickUp.MdiParent = (Form)this;
+            ++this.childFormNumber;
+            frmPickUp.Text = "Modificar Pickup" + this.childFormNumber.ToString();
+            frmPickUp.WindowState = FormWindowState.Maximized;
+            frmPickUp.Show();
         }
 
         // Metodo para gestionar el acceso a los formularios dependiendo el nivel de usuario
@@ -285,17 +307,31 @@ namespace ActualizadorDoctosUnigis
             confirmarOrdenesToolStripMenuItem.Enabled = Convert.ToBoolean(Convert.ToInt32(acceso[1].ToString()));
             liberarParadasToolStripMenuItem.Enabled = Convert.ToBoolean(Convert.ToInt32(acceso[2].ToString()));
             modificarFechaEntregaToolStripMenuItem1.Enabled = Convert.ToBoolean(Convert.ToInt32(acceso[3].ToString()));
-            modificarRecogeMercanciaRToolStripMenuItem.Enabled= Convert.ToBoolean(Convert.ToInt32(acceso[4].ToString()));
-            cancelarLiquidacionToolStripMenuItem.Enabled= Convert.ToBoolean(Convert.ToInt32(acceso[3].ToString()));
+            modificarRecogeMercanciaRToolStripMenuItem.Enabled = Convert.ToBoolean(Convert.ToInt32(acceso[4].ToString()));
+            cancelarLiquidacionToolStripMenuItem.Enabled = Convert.ToBoolean(Convert.ToInt32(acceso[3].ToString()));
             cancelarDocumentosToolStripMenuItem.Enabled = Convert.ToBoolean(Convert.ToInt32(acceso[0].ToString()));
             validarParadasToolStripMenuItem.Enabled = Convert.ToBoolean(Convert.ToInt32(acceso[5].ToString()));
             pendientesPorEmbarcarToolStripMenuItem.Enabled = Convert.ToBoolean(Convert.ToInt32(acceso[6].ToString()));
             kGPendientesToolStripMenuItem.Enabled = Convert.ToBoolean(Convert.ToInt32(acceso[6].ToString()));
             valesPendienteToolStripMenuItem.Enabled = Convert.ToBoolean(Convert.ToInt32(acceso[6].ToString()));
+            modificarPickuoToolStripMenuItem.Enabled= Convert.ToBoolean(Convert.ToInt32(acceso[0].ToString()));
         }
-       
 
-            
+
+        bool FormIsOpen(string nomber_form)
+        {
+            foreach (var form_hijo in this.MdiChildren)
+            {
+                if (form_hijo.Text == nomber_form)
+                {
+                    form_hijo.BringToFront();
+                    MessageBox.Show("Tienes un viaje pendiente por liberar");
+                    return true;
+                }
+                return false;
+            }
+            return false;
+        }
 
     }
 }

@@ -1,7 +1,5 @@
 ﻿using ActualizadorDoctosUnigis.Contoller;
-using ActualizadorDoctosUnigis.Models;
 using Microsoft.VisualBasic.CompilerServices;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -11,18 +9,15 @@ using System.Drawing;
 using System.Linq;
 using System.Net.Http;
 using System.Net;
- 
+
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Xml.Linq;
 using System.Diagnostics;
-using System.IO;
 using ClosedXML.Excel;
 
 namespace ActualizadorDoctosUnigis
 {
-    
+
     public partial class Form1 : Form
     {
         Libreria lib = new Libreria();
@@ -30,6 +25,7 @@ namespace ActualizadorDoctosUnigis
         DataTable dt;
         DataTable DTV;
         DataTable DTOCD=new DataTable();
+        DataTable DTFolio = new DataTable();
         Decimal Min = 24;
         Decimal Max = 0;
         Decimal Mid = 0;
@@ -57,18 +53,19 @@ namespace ActualizadorDoctosUnigis
         {
             InitializeComponent();
             this.KeyPreview = true;
-            this.KeyPress += new KeyPressEventHandler(Control_KeyPress);
-            this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
-            user = u;
-            //  this.MouseWheel += func_mouseWheel;
+            this.KeyPress += new KeyPressEventHandler(this.Control_KeyPress);
+            this.WindowState = FormWindowState.Maximized;
+            this.dataGridView1.CellValidating += new DataGridViewCellValidatingEventHandler(this.DataGridView1_CellValidating);
+            this.user = u;
 
         }
         int num;
         private void button1_Click(object sender, EventArgs e)
-        { DialogResult result1 = MessageBox.Show("Deseas enviar la informacion seleccionada a Unigis una vez se envie no podra eliminarse", "Informacion ", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+        {
+            DialogResult result1 = MessageBox.Show("Deseas enviar la informacion seleccionada a Unigis una vez se envie no podra eliminarse", "Informacion ", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
             DataTable dCod = q.Cod_estab(comboBox1.SelectedItem.ToString());
             cod_estab = dCod.Rows[0].ItemArray[0].ToString();
-            if (result1 == System.Windows.Forms.DialogResult.Yes)
+            if (result1 == DialogResult.Yes)
             {
                 xmlwriterOrden xml = new xmlwriterOrden();
                 DataTable dtLocalC = new DataTable();
@@ -78,95 +75,100 @@ namespace ActualizadorDoctosUnigis
                          select r["N° DOCUMENTO"]).Distinct().ToList();
                 List<object> doc = (from r in dtLocalC.AsEnumerable()
                                     select r["N° DOCUMENTO"]).Distinct().ToList();
-                DataTable DTPickup =validar_Pickup(doc);
+
+                Validar_folio(dtLocalC, cod_estab);
+                DataTable DTPickup = validar_Pickup(doc);
                 DataTable aux = new DataTable();
                 string msg = "Actualizacion Correcta :" + Environment.NewLine;
 
-                foreach (var item in doc)
+
+                if (dtLocalC.Rows.Count >= 1)
                 {
-                    aux = DivDT(dtLocalC, aux, item.ToString());
-                    //MessageBox.Show(xml.stringtoxml(aux));
-                    //  string msj = xml.stringtoxml(aux).ToString();
-
-                    System.Net.ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
-                    var endpoint = new Uri("https://grupo-eyp.unigis.com/mapi/soap/logistic/service.asmx?op=CrearOrdenesPedido");
-                    //var result = client.GetAsync(endpoint).Result;
-                    //var xmlR = result.Content.ReadAsStringAsync().Result;
-                    var paylod = new StringContent(xml.stringtoxml(aux), Encoding.UTF8, "text/xml");
-                    string y = (xml.stringtoxml(aux));
-                    var result = client.PostAsync(endpoint, paylod).Result.StatusCode.ToString();
-
-                    if (result == "OK")
+                    foreach (var item in doc)
                     {
-                        msg = msg + "Documento " + item.ToString() + Environment.NewLine;
-                        ActualizarStatusPPE(aux, cod_estab);
-                        //bnt_Refrescar.PerformClick();
+                        aux = DivDT(dtLocalC, aux, item.ToString());
+                        //MessageBox.Show(xml.stringtoxml(aux));
+                        //  string msj = xml.stringtoxml(aux).ToString();
+
+                        System.Net.ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
+                        var endpoint = new Uri("https://grupo-eyp.unigis.com/mapi/soap/logistic/service.asmx?op=CrearOrdenesPedido");
+                        //var result = client.GetAsync(endpoint).Result;
+                        //var xmlR = result.Content.ReadAsStringAsync().Result;
+                        var paylod = new StringContent(xml.stringtoxml(aux), Encoding.UTF8, "text/xml");
+                        string y = (xml.stringtoxml(aux));
+                        var result = client.PostAsync(endpoint, paylod).Result.StatusCode.ToString();
+
+                        if (result == "OK")
+                        {
+                            msg = msg + "Documento " + item.ToString() + Environment.NewLine;
+                            ActualizarStatusPPE(aux, cod_estab);
+                            //bnt_Refrescar.PerformClick();
+                        }
+                        else
+                        {
+                            MessageBox.Show("No se ha podido Enviar el Documento");
+                        }
+
+
+
+                        aux.Clear();
+
                     }
-                    else
+
+                    DataTable aux2 = new DataTable();
+                    List<object> pp = (from r in DTPickup.AsEnumerable()
+                                       select r["N° DOCUMENTO"]).Distinct().ToList();
+
+
+                    foreach (var itemP in pp)
                     {
-                        MessageBox.Show("No se ha podido Enviar el Documento");
+                        aux = DivDT(DTPickup, aux2, itemP.ToString());
+                        //MessageBox.Show(xml.stringtoxml(aux));
+                        //  string msj = xml.stringtoxml(aux).ToString();
+
+                        System.Net.ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
+                        var endpoint = new Uri("https://grupo-eyp.unigis.com/mapi/soap/logistic/service.asmx?op=CrearOrdenesPedido");
+                        //var result = client.GetAsync(endpoint).Result;
+                        //var xmlR = result.Content.ReadAsStringAsync().Result;
+                        var paylod = new StringContent(xml.stringtoxml(aux2), Encoding.UTF8, "text/xml");
+                        var y = (xml.stringtoxml(aux2));
+                        var result = client.PostAsync(endpoint, paylod).Result.StatusCode.ToString();
+
+                        if (result == "OK")
+                        {
+                            msg = msg + "Documento " + itemP.ToString() + Environment.NewLine;
+                            ActualizarStatusPPE(aux2, cod_estab);
+                            //bnt_Refrescar.PerformClick();
+                        }
+                        else
+                        {
+                            MessageBox.Show("No se ha podido Enviar el Documento");
+                        }
                     }
-
-
-
-                    aux.Clear();
-
-                }
-
-                DataTable aux2 = new DataTable();
-                List<object> pp = (from r in DTPickup.AsEnumerable()
-                                   select r["N° DOCUMENTO"]).Distinct().ToList();
-
-
-                foreach (var itemP in pp)
-                {
-                    aux = DivDT(DTPickup, aux2, itemP.ToString());
-                    //MessageBox.Show(xml.stringtoxml(aux));
-                    //  string msj = xml.stringtoxml(aux).ToString();
-
-                    System.Net.ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
-                    var endpoint = new Uri("https://grupo-eyp.unigis.com/mapi/soap/logistic/service.asmx?op=CrearOrdenesPedido");
-                    //var result = client.GetAsync(endpoint).Result;
-                    //var xmlR = result.Content.ReadAsStringAsync().Result;
-                    var paylod = new StringContent(xml.stringtoxml(aux2), Encoding.UTF8, "text/xml");
-                    var y = (xml.stringtoxml(aux2));
-                    var result = client.PostAsync(endpoint, paylod).Result.StatusCode.ToString();
-
-                    if (result == "OK")
-                    {
-                        msg = msg + "Documento " + itemP.ToString() + Environment.NewLine;
-                        ActualizarStatusPPE(aux2, cod_estab);
-                        //bnt_Refrescar.PerformClick();
-                    }
-                    else
-                    {
-                        MessageBox.Show("No se ha podido Enviar el Documento");
-                    }
-                }
                     MessageBox.Show(msg, "Actualizacion de Documentos ", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                // MessageBox.Show(msg,"Actualizacion",MessageBoxButtons.OK);
-                //
+                    // MessageBox.Show(msg,"Actualizacion",MessageBoxButtons.OK);
+                    //
 
-                //Qrys q = new Qrys();
-                //DataTable dt = q.selectitems( );
-                //MessageBox.Show(
-                //xml.stringtoxml(dt));
-                //using (var client = new HttpClient())
-                //{
-                //    var endpoint = new Uri("https://grupo-eyp.unigis.com/mapi/soap/logistic/service.asmx?op=CrearOrdenesPedido");
-                //    //var result = client.GetAsync(endpoint).Result;
-                //    //var xmlR = result.Content.ReadAsStringAsync().Result;
-                //    var paylod = new StringContent(xml.stringtoxml(dt), Encoding.UTF8, "text/xml");
-                //    var result = client.PostAsync(endpoint, paylod).Result.Content.ReadAsStringAsync().Result;
-                //    MessageBox.Show(result.ToString());
-                //}
-                aux.Clear();
-                dt.Clear();
-                //dataGridView1.Sort(dataGridView1.Columns["FechaEntrega"], ListSortDirection.Ascending);
-                //SetMinMax(dataGridView1, "400");
-                //ColorCells(dataGridView1);
+                    //Qrys q = new Qrys();
+                    //DataTable dt = q.selectitems( );
+                    //MessageBox.Show(
+                    //xml.stringtoxml(dt));
+                    //using (var client = new HttpClient())
+                    //{
+                    //    var endpoint = new Uri("https://grupo-eyp.unigis.com/mapi/soap/logistic/service.asmx?op=CrearOrdenesPedido");
+                    //    //var result = client.GetAsync(endpoint).Result;
+                    //    //var xmlR = result.Content.ReadAsStringAsync().Result;
+                    //    var paylod = new StringContent(xml.stringtoxml(dt), Encoding.UTF8, "text/xml");
+                    //    var result = client.PostAsync(endpoint, paylod).Result.Content.ReadAsStringAsync().Result;
+                    //    MessageBox.Show(result.ToString());
+                    //}
+                    aux.Clear();
+                    dt.Clear();
+                    //dataGridView1.Sort(dataGridView1.Columns["FechaEntrega"], ListSortDirection.Ascending);
+                    //SetMinMax(dataGridView1, "400");
+                    //ColorCells(dataGridView1);
+                }
             }
-
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -246,6 +248,7 @@ namespace ActualizadorDoctosUnigis
                 DTA.Columns.Add("NOMBRE ITEM");
                 DTA.Columns.Add("CANTIDAD");
                 DTA.Columns.Add("CODIGO ITEM");
+                DTA.Columns.Add("NOTAS");
                 DTA.Columns.Add("FECHA MIN ENTREGA");
                 DTA.Columns.Add("FECHA MAX ENTREGA");
                 DTA.Columns.Add("MIN VENTANA HORARIA 1");
@@ -288,7 +291,6 @@ namespace ActualizadorDoctosUnigis
                 DTA.Columns.Add("Tipo");
             }
 
-
             DataRow drLocal = null;
             if (folio == "")
             {
@@ -314,6 +316,7 @@ namespace ActualizadorDoctosUnigis
                         drLocal["NOMBRE ITEM"] = dr.Cells["NOMBRE ITEM"].Value;
                         drLocal["CANTIDAD"] = dr.Cells["CANTIDAD"].Value;
                         drLocal["CODIGO ITEM"] = dr.Cells["CODIGO ITEM"].Value;
+                        drLocal["NOTAS"] = dr.Cells["NOTAS"].Value;
                         drLocal["FECHA MIN ENTREGA"] = dr.Cells["FECHA MIN ENTREGA"].Value;
                         drLocal["FECHA MAX ENTREGA"] = dr.Cells["FECHA MAX ENTREGA"].Value;
                         drLocal["MIN VENTANA HORARIA 1"] = dr.Cells["MIN VENTANA HORARIA 1"].Value.ToString();
@@ -384,6 +387,7 @@ namespace ActualizadorDoctosUnigis
                         drLocal["NOMBRE ITEM"] = dr["NOMBRE ITEM"];
                         drLocal["CANTIDAD"] = dr["CANTIDAD"];
                         drLocal["CODIGO ITEM"] = dr["CODIGO ITEM"];
+                        drLocal["NOTAS"] = dr["NOTAS"];
                         drLocal["FECHA MIN ENTREGA"] = dr["FECHA MIN ENTREGA"];
                         drLocal["FECHA MAX ENTREGA"] = dr["FECHA MAX ENTREGA"];
                         drLocal["MIN VENTANA HORARIA 1"] = dr["MIN VENTANA HORARIA 1"].ToString();
@@ -515,6 +519,42 @@ namespace ActualizadorDoctosUnigis
                 }
             }
         }
+        private void DataGridView1_CellValidating(object sender, DataGridViewCellValidatingEventArgs e)
+        {
+            DataGridView dataGridView = sender as DataGridView;
+            if (!(dataGridView.Columns[e.ColumnIndex].Name == "CANTIDAD"))
+                return;
+            string s = e.FormattedValue.ToString();
+            Decimal num1 = Convert.ToDecimal(this.DAux.Rows[e.RowIndex].ItemArray[e.ColumnIndex - 1].ToString());
+            Decimal num2 = Convert.ToDecimal(this.q.Consultar($"select peso_total from productos where cod_prod= '{this.DAux.Rows[e.RowIndex].ItemArray[e.ColumnIndex - 3]?.ToString()}'").Rows[0].ItemArray[0]);
+            if (num2 == 0M)
+                num2 = Convert.ToDecimal("0.01");
+            Decimal result;
+            if (Decimal.TryParse(s, out result))
+            {
+                if (result > num1)
+                {
+                    dataGridView.Rows[e.RowIndex].Cells[e.ColumnIndex].Value = (object)num1;
+                    dataGridView.Rows[e.RowIndex].Cells[e.ColumnIndex + 3].Value = (object)(num1 * num2);
+                    e.Cancel = true;
+                    int num3 = (int)MessageBox.Show($"La cantidad máxima permitida es {num1}.", "Límite Excedido", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                    this.dataGridView1.Refresh();
+                }
+                else if (result != num1)
+                {
+                    dataGridView.Rows[e.RowIndex].Cells["Peso_KG"].Value = (object)(result * num2);
+                    this.dataGridView1.Refresh();
+                }
+            }
+            else
+            {
+                e.Cancel = true;
+                dataGridView.Rows[e.RowIndex].Cells[e.ColumnIndex].Value = (object)num1;
+                dataGridView.Rows[e.RowIndex].Cells["Peso_KG"].Value = (object)(num1 * num2);
+                int num4 = (int)MessageBox.Show("Por favor, ingrese solo números enteros válidos.", "Error de Formato", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+            }
+        }
+
 
 
         private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
@@ -603,11 +643,8 @@ namespace ActualizadorDoctosUnigis
 
         private void ConsultarDoctos_DoWork(object sender, DoWorkEventArgs e)
         {
-                dt = q.selectitems(Estab);
-            DAux=q.selectitems(Estab);
-             
-
-
+            dt = q.selectitems(Estab);
+            DAux = q.selectitems(Estab);
         }
 
         private void ConsultarDoctos_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
@@ -673,7 +710,11 @@ namespace ActualizadorDoctosUnigis
 
                 }
             }
-            catch (SqlException sql) { System.Windows.Forms.MessageBox.Show("Servidor a consultar no cuenta con conexion a internet", "Conexion", MessageBoxButtons.OK); }
+            catch (SqlException sql)
+            {
+                MessageBox.Show("Servidor a consultar no cuenta con conexion a internet", "Conexion", MessageBoxButtons.OK);
+            }
+
             bnt_Refrescar.Enabled = true;
             btn_Enviar.Enabled = true;
             button2.Enabled = true;
@@ -704,9 +745,12 @@ namespace ActualizadorDoctosUnigis
             dataGridView1.Columns["CT ORIGEN"].Visible = false;
             dataGridView1.Columns["REFERENCIA DOMICILIO"].Visible = false;
 
+            // Impide que la columna ajuste su ancho automaticamente
+            dataGridView1.Columns["NOTAS"].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
 
+            // Establece el ancho de la columna en 350 px
+            dataGridView1.Columns["NOTAS"].Width = 350;
         }
-
 
         private void dataGridView2_Sorted(object sender, EventArgs e)
         {
@@ -775,7 +819,7 @@ namespace ActualizadorDoctosUnigis
                     case ("EdMaC"):transaccion = "713";break;
                     case ("TE"): transaccion = "35"; break;
                 }
-                q.Historico_envio(Documento, transaccion, cod_prod, fecha_doc, cantidad, fecha_actual, deposito, user, latitud, longi, fecha_entreg);
+                //q.Historico_envio(Documento, transaccion, cod_prod, fecha_doc, cantidad, fecha_actual, deposito, user, latitud, longi, fecha_entreg);
                 q.UpdatePPE(cod_prod, Documento, transaccion,cod_estab,"1");
 
             
@@ -1273,6 +1317,60 @@ namespace ActualizadorDoctosUnigis
                    DataGridViewColumn col = new DataGridViewColumn();
                     col.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
         }
+
+
+        private void Validar_folio(DataTable auxF, string cod_estab)
+        {
+            string Folio;
+            string cod_prod_F;
+            string resultado;
+            string Folio_m;
+            string cod_pro_f;
+            string cantidad;
+            string transaccion;
+
+            // DataTable aux = new DataTable();
+            for (int i = auxF.Rows.Count - 1; i >= 0; i--)
+            {
+
+                Folio = auxF.Rows[i]["N° Documento"].ToString().Substring(auxF.Rows[i]["N° Documento"].ToString().IndexOf('-') + 1);
+                cod_prod_F = auxF.Rows[i]["CODIGO ITEM"].ToString();
+                Folio_m = auxF.Rows[i]["N° Documento"].ToString();
+                transaccion = auxF.Rows[i]["N° Documento"].ToString().Substring(0, auxF.Rows[i]["N° Documento"].ToString().IndexOf('-'));
+                // cantidad = Convert.ToInt32(dtLocalC.Rows[i]["cantidad"]);
+                switch (transaccion)
+                {
+                    case ("FC"): transaccion = "36"; break;
+                    case ("RC"): transaccion = "37"; break;
+                    case ("PE"): transaccion = "29"; break;
+                    case ("EdMaC"): transaccion = "713"; break;
+                    case ("TE"): transaccion = "35"; break;
+                }
+                DTFolio = q.Consultar("select  folio,cod_prod,cantidad,transaccion from productos_por_embarcar where status='1' and folio='" + Folio + "' and transaccion='" + transaccion + "' and cod_prod='" + cod_prod_F + "'  ", cod_estab);
+
+                if (DTFolio.Rows.Count >= 1)
+                {
+                    MessageBox.Show("Documento : " + DTFolio.Rows[0]["folio"] + DTFolio.Rows[0]["cod_prod"] + DTFolio.Rows[0]["cantidad"]);
+
+
+
+
+                    auxF.Rows[i].Delete();
+
+
+                }
+
+
+
+            }
+
+
+
+
+
+        }
+
+
     }
 }
 
