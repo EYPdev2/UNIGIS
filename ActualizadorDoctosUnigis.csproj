@@ -585,6 +585,7 @@
     <None Include="Resources\OIP.jpeg" />
     <Content Include="Resources\font-adjustment.png" />
     <Content Include="Resources\searching.png" />
+    <None Include="Resources\trash-solid.png" />
     <Content Include="Unigis-ico.ico" />
   </ItemGroup>
   <ItemGroup>

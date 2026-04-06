@@ -41,12 +41,13 @@ namespace ActualizadorDoctosUnigis
             this.txt_estab = new System.Windows.Forms.TextBox();
             this.dateTimePicker1 = new System.Windows.Forms.DateTimePicker();
             this.dateTimePicker2 = new System.Windows.Forms.DateTimePicker();
-            this.btn_Guardar = new System.Windows.Forms.Button();
-            this.btn_Actualizar = new System.Windows.Forms.Button();
             this.Solicita = new System.Windows.Forms.ComboBox();
             this.Razon = new System.Windows.Forms.ComboBox();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
+            this.btn_Limpiar = new System.Windows.Forms.Button();
+            this.btn_Guardar = new System.Windows.Forms.Button();
+            this.btn_Actualizar = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // lbl_fechaEntrega
@@ -54,7 +55,7 @@ namespace ActualizadorDoctosUnigis
             this.lbl_fechaEntrega.AutoSize = true;
             this.lbl_fechaEntrega.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lbl_fechaEntrega.ForeColor = System.Drawing.Color.White;
-            this.lbl_fechaEntrega.Location = new System.Drawing.Point(105, 13);
+            this.lbl_fechaEntrega.Location = new System.Drawing.Point(155, 13);
             this.lbl_fechaEntrega.Name = "lbl_fechaEntrega";
             this.lbl_fechaEntrega.Size = new System.Drawing.Size(293, 25);
             this.lbl_fechaEntrega.TabIndex = 2;
@@ -94,7 +95,7 @@ namespace ActualizadorDoctosUnigis
             // 
             this.lbl_FE.AutoSize = true;
             this.lbl_FE.ForeColor = System.Drawing.Color.White;
-            this.lbl_FE.Location = new System.Drawing.Point(281, 222);
+            this.lbl_FE.Location = new System.Drawing.Point(324, 226);
             this.lbl_FE.Name = "lbl_FE";
             this.lbl_FE.Size = new System.Drawing.Size(77, 13);
             this.lbl_FE.TabIndex = 6;
@@ -119,8 +120,9 @@ namespace ActualizadorDoctosUnigis
             // 
             // cmb_tipoD
             // 
+            this.cmb_tipoD.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmb_tipoD.FormattingEnabled = true;
-            this.cmb_tipoD.Location = new System.Drawing.Point(298, 83);
+            this.cmb_tipoD.Location = new System.Drawing.Point(298, 82);
             this.cmb_tipoD.Name = "cmb_tipoD";
             this.cmb_tipoD.Size = new System.Drawing.Size(146, 21);
             this.cmb_tipoD.TabIndex = 10;
@@ -130,15 +132,16 @@ namespace ActualizadorDoctosUnigis
             // 
             this.txt_estab.Location = new System.Drawing.Point(110, 122);
             this.txt_estab.Name = "txt_estab";
+            this.txt_estab.ReadOnly = true;
             this.txt_estab.Size = new System.Drawing.Size(271, 20);
             this.txt_estab.TabIndex = 11;
             // 
             // dateTimePicker1
             // 
             this.dateTimePicker1.Enabled = false;
-            this.dateTimePicker1.Location = new System.Drawing.Point(89, 222);
+            this.dateTimePicker1.Location = new System.Drawing.Point(87, 222);
             this.dateTimePicker1.Name = "dateTimePicker1";
-            this.dateTimePicker1.Size = new System.Drawing.Size(147, 20);
+            this.dateTimePicker1.Size = new System.Drawing.Size(202, 20);
             this.dateTimePicker1.TabIndex = 12;
             this.dateTimePicker1.ValueChanged += new System.EventHandler(this.dateTimePicker1_ValueChanged);
             // 
@@ -146,10 +149,60 @@ namespace ActualizadorDoctosUnigis
             // 
             this.dateTimePicker2.CalendarForeColor = System.Drawing.SystemColors.ControlLightLight;
             this.dateTimePicker2.Format = System.Windows.Forms.DateTimePickerFormat.Custom;
-            this.dateTimePicker2.Location = new System.Drawing.Point(364, 222);
+            this.dateTimePicker2.Location = new System.Drawing.Point(407, 222);
             this.dateTimePicker2.Name = "dateTimePicker2";
-            this.dateTimePicker2.Size = new System.Drawing.Size(147, 20);
+            this.dateTimePicker2.Size = new System.Drawing.Size(178, 20);
             this.dateTimePicker2.TabIndex = 13;
+            // 
+            // Solicita
+            // 
+            this.Solicita.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.Solicita.FormattingEnabled = true;
+            this.Solicita.Location = new System.Drawing.Point(89, 179);
+            this.Solicita.Name = "Solicita";
+            this.Solicita.Size = new System.Drawing.Size(200, 21);
+            this.Solicita.TabIndex = 14;
+            // 
+            // Razon
+            // 
+            this.Razon.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.Razon.FormattingEnabled = true;
+            this.Razon.Location = new System.Drawing.Point(376, 179);
+            this.Razon.Name = "Razon";
+            this.Razon.Size = new System.Drawing.Size(209, 21);
+            this.Razon.TabIndex = 15;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.ForeColor = System.Drawing.Color.White;
+            this.label1.Location = new System.Drawing.Point(324, 182);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(38, 13);
+            this.label1.TabIndex = 16;
+            this.label1.Text = "Razon";
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.ForeColor = System.Drawing.Color.White;
+            this.label2.Location = new System.Drawing.Point(23, 182);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(41, 13);
+            this.label2.TabIndex = 17;
+            this.label2.Text = "Solicita";
+            // 
+            // btn_Limpiar
+            // 
+            this.btn_Limpiar.BackgroundImage = global::ActualizadorDoctosUnigis.Properties.Resources.trash_solid;
+            this.btn_Limpiar.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.btn_Limpiar.Enabled = false;
+            this.btn_Limpiar.Location = new System.Drawing.Point(87, 12);
+            this.btn_Limpiar.Name = "btn_Limpiar";
+            this.btn_Limpiar.Size = new System.Drawing.Size(31, 32);
+            this.btn_Limpiar.TabIndex = 18;
+            this.btn_Limpiar.UseVisualStyleBackColor = true;
+            this.btn_Limpiar.Click += new System.EventHandler(this.btnLimpiar_Click);
             // 
             // btn_Guardar
             // 
@@ -174,48 +227,13 @@ namespace ActualizadorDoctosUnigis
             this.btn_Actualizar.UseVisualStyleBackColor = true;
             this.btn_Actualizar.Click += new System.EventHandler(this.btn_Actualizar_Click);
             // 
-            // Solicita
-            // 
-            this.Solicita.FormattingEnabled = true;
-            this.Solicita.Location = new System.Drawing.Point(89, 179);
-            this.Solicita.Name = "Solicita";
-            this.Solicita.Size = new System.Drawing.Size(147, 21);
-            this.Solicita.TabIndex = 14;
-            // 
-            // Razon
-            // 
-            this.Razon.FormattingEnabled = true;
-            this.Razon.Location = new System.Drawing.Point(306, 179);
-            this.Razon.Name = "Razon";
-            this.Razon.Size = new System.Drawing.Size(209, 21);
-            this.Razon.TabIndex = 15;
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.ForeColor = System.Drawing.Color.White;
-            this.label1.Location = new System.Drawing.Point(254, 182);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(38, 13);
-            this.label1.TabIndex = 16;
-            this.label1.Text = "Razon";
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.ForeColor = System.Drawing.Color.White;
-            this.label2.Location = new System.Drawing.Point(23, 182);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(41, 13);
-            this.label2.TabIndex = 17;
-            this.label2.Text = "Solicita";
-            // 
             // frm_FechaEntrega
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.ClientSize = new System.Drawing.Size(573, 370);
+            this.ClientSize = new System.Drawing.Size(613, 370);
+            this.Controls.Add(this.btn_Limpiar);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.Razon);
@@ -261,5 +279,6 @@ namespace ActualizadorDoctosUnigis
         private System.Windows.Forms.ComboBox Razon;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Button btn_Limpiar;
     }
 }

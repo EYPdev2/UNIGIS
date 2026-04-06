@@ -47,28 +47,33 @@ namespace ActualizadorDoctosUnigis
             int index1 = 0;
             foreach (DataRow row in (InternalDataCollectionBase)dataTable1.Rows)
             {
-                this.cmb_tipoD.Items.Add((object)row[0].ToString());
+                this.cmb_tipoD.Items.Add(row[0].ToString().Trim());
                 this.t[index1] = row[1].ToString();
                 ++index1;
             }
-            DataTable dataTable2 = this.q.Consultar("EXEC [dbo].[EyP_Razones_RM] ");
+            DataTable dataTable2 = this.q.Consultar("EXEC [dbo].[EyP_Razones_RM]");
             int index2 = 0;
             foreach (DataRow row in (InternalDataCollectionBase)dataTable2.Rows)
             {
-                this.Razon.Items.Add((object)row[1].ToString());
+                this.Razon.Items.Add(row[1].ToString().Trim());
                 this.R[index2] = row[0].ToString();
                 ++index2;
             }
-            DataTable dataTable3 = this.q.Consultar("exec [dbo].[EyP_USUARIOS_RM]  ");
+            DataTable dataTable3 = this.q.Consultar("exec [dbo].[EyP_USUARIOS_RM]");
             int index3 = 0;
             foreach (DataRow row in (InternalDataCollectionBase)dataTable3.Rows)
             {
-                this.Solicita.Items.Add((object)row[1].ToString());
+                this.Solicita.Items.Add(row[1].ToString().Trim());
                 this.U[index3] = row[0].ToString();
                 ++index3;
             }
-            this.dateTimePicker2.CustomFormat = "dd/MM/yyyy HH:mm:ss";
+
+            dateTimePicker1.Format = DateTimePickerFormat.Custom;
+            dateTimePicker1.CustomFormat = "dd 'de 'MMMM 'de' yyyy HH:mm";
+
+            this.dateTimePicker2.CustomFormat = "dd/MM/yyyy HH:mm";
             this.dateTimePicker2.Format = DateTimePickerFormat.Custom;
+            dateTimePicker2.MinDate = DateTime.Now;
         }
 
         private void btn_Actualizar_Click(object sender, EventArgs e)
@@ -79,13 +84,41 @@ namespace ActualizadorDoctosUnigis
                 {
                     DataTable dataTable = this.q.Consultar($"Select  f.fecha,f.fecha_entrega, rtrim(e.nombre)  ,f.status, f.recoge_mercancia from facremtick f inner Join establecimientos e on f.cod_estab = e.cod_estab where f.folio = '{this.txt_folio.Text}' And f.transaccion = '{this.t[this.cmb_tipoD.SelectedIndex]}'", this.lib.Conexiones(this.txt_folio.Text).Rows[0][0].ToString());
                     this.txt_estab.Text = dataTable.Rows[0][2].ToString();
-                    this.dateTimePicker1.Value = DateTime.Parse(dataTable.Rows[0][0].ToString());
-                    this.dateTimePicker2.Value = DateTime.Parse(dataTable.Rows[0][1].ToString());
                     this.btn_Actualizar.Enabled = false;
                     this.btn_Guardar.Enabled = true;
+                    btn_Limpiar.Enabled = true;
+
+                    var fechaDoc = DateTime.Parse(dataTable.Rows[0][0].ToString());
+                    fechaDoc = new DateTime(
+                        fechaDoc.Year,
+                        fechaDoc.Month,
+                        fechaDoc.Day,
+                        fechaDoc.Hour,
+                        fechaDoc.Minute,
+                        0
+                    );
+
+                    var fechaEntrega = DateTime.Parse(dataTable.Rows[0][1].ToString());
+                    fechaEntrega = new DateTime(
+                        fechaEntrega.Year,
+                        fechaEntrega.Month,
+                        fechaEntrega.Day,
+                        fechaEntrega.Hour,
+                        fechaEntrega.Minute,
+                        0
+                    );
+
+                    dateTimePicker1.Value = fechaDoc;
+
+                    dateTimePicker2.MinDate = fechaDoc.Date;
+                    dateTimePicker2.Value = fechaEntrega;
+
+                    cmb_tipoD.Enabled = false;
+                    txt_folio.ReadOnly = true;
                 }
-                catch
+                catch (Exception ex)
                 {
+                    MessageBox.Show("Un error inesperado ha ocurrido: " + ex.Message, "ERROR");
                 }
             }
             else
@@ -96,20 +129,15 @@ namespace ActualizadorDoctosUnigis
 
         private void dateTimePicker1_ValueChanged(object sender, EventArgs e)
         {
-
         }
+
         //Metodo que  manda a ejecutar una funcion que se conecta a la base de datos y guarda la informacion enviada 
-        private void guardar(
-     string folio,
-     string transaccion,
-     string fecha,
-     string solicita,
-     string razon)
+        private void guardar(string folio, string transaccion, string fecha, string solicita, string razon)
         {
-            this.q.ActualizarFechaEntrega(folio, transaccion, fecha, this.u, solicita, razon);
+            q.ActualizarFechaEntrega(folio, transaccion, fecha, u, solicita, razon);
         }
 
-        private void btn_Guardar_Click  (object sender, EventArgs e)
+        private void btn_Guardar_Click(object sender, EventArgs e)
         {
             if (this.dateTimePicker2.Value >= this.dateTimePicker1.Value)
             {
@@ -122,10 +150,18 @@ namespace ActualizadorDoctosUnigis
                         txt_folio.Text = "";
                         txt_estab.Text = "";
                         dateTimePicker1.Value = DateTime.Now;
+                        dateTimePicker2.MinDate = DateTime.Now;
                         dateTimePicker2.Value = DateTime.Now;
                         Solicita.SelectedIndex = -1;
                         Razon.SelectedIndex = -1;
-                        cmb_tipoD.Text = "";
+                        cmb_tipoD.SelectedIndex = -1;
+
+                        cmb_tipoD.Enabled = true;
+                        txt_folio.ReadOnly = false;
+
+                        btn_Guardar.Enabled = false;
+                        btn_Actualizar.Enabled = true;
+                        btn_Limpiar.Enabled = false;
                     }
                     else
                     {
@@ -136,13 +172,32 @@ namespace ActualizadorDoctosUnigis
                 {
                     int num = (int)MessageBox.Show(ex.Message);
                 }
-                this.btn_Guardar.Enabled = false;
-                this.btn_Actualizar.Enabled = true;
             }
             else
             {
                 int num2 = (int)MessageBox.Show($"No se puede actualizar Documento {this.txt_folio.Text} a una fecha menor de su Documento", "Atencion", MessageBoxButtons.OK);
             }
+        }
+
+        private void btnLimpiar_Click(object sender, EventArgs e)
+        {
+            txt_folio.Text = "";
+            txt_estab.Text = "";
+
+            dateTimePicker1.Value = DateTime.Now;
+            dateTimePicker2.MinDate = DateTime.Now;
+            dateTimePicker2.Value = DateTime.Now;
+
+            Solicita.SelectedIndex = -1;
+            Razon.SelectedIndex = -1;
+            cmb_tipoD.SelectedIndex = -1;
+
+            cmb_tipoD.Enabled = true;
+            txt_folio.ReadOnly = false;
+
+            btn_Guardar.Enabled = false;
+            btn_Actualizar.Enabled = true;
+            btn_Limpiar.Enabled = false;
         }
     }
 }
