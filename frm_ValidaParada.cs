@@ -1,5 +1,6 @@
 ﻿using ActualizadorDoctosUnigis.Contoller;
 using ActualizadorDoctosUnigis.Models;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -7,6 +8,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Data.SqlClient;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -16,6 +18,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Serialization;
+using static ActualizadorDoctosUnigis.Models.Estructura_ParadaJS;
 
 namespace ActualizadorDoctosUnigis
 {
@@ -184,7 +187,7 @@ namespace ActualizadorDoctosUnigis
             return de.Rows[0].ItemArray[0].ToString();
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private async void button1_Click(object sender, EventArgs e)
         {
             xmlwriterParada xmlwriterParada = new xmlwriterParada();
             this.ObtenerParadas(this.txt_viaje.Text);
@@ -207,6 +210,31 @@ namespace ActualizadorDoctosUnigis
                         this.cod_estab = this.ov.d.DepositoSalida.RefDepositoExterno.ToString();
                     }
                 }
+
+                var dataTable = q.Consultar($"select IdParada, unis2.id from EYP_Unis_parada unis with(nolock) outer apply (select MAX(id) as id from EYP_Unis_parada e with(nolock) where TipoObjeto = 'Parada' and e.IdParada = unis.IdParada and e.IdViaje = unis.IdViaje and Estado in ('Entregado', 'No Entregado', 'Entrega parcial')) unis2 where TipoObjeto = 'Parada' and ISNULL(unis.id, 0) = ISNULL(unis2.id, 0) and IdViaje = '{txt_viaje.Text.Trim()}'");
+                foreach (DataRow row1 in (InternalDataCollectionBase)dataTable.Rows)
+                {
+                    obtenerParadas_request obtenerParadasRequest = new obtenerParadas_request();
+                    obtenerParadasRequest.ApiKey = "1234";
+                    obtenerParadasRequest.IdParada = Convert.ToInt32(row1.ItemArray[0].ToString());
+                    string content = JsonConvert.SerializeObject(obtenerParadasRequest);
+                    using (HttpClient httpClient = new HttpClient())
+                    {
+                        ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3;
+                        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+
+                        var response = await httpClient.PostAsync(new Uri("https://grupo-eyp.unigis.com/mapi/soap/logistic/service.asmx/ConsultarParadaPorId"), new StringContent(content, Encoding.UTF8, "application/json"));
+
+                        var text = await response.Content.ReadAsStringAsync();
+
+                        var rootobject4 = JsonConvert.DeserializeObject<Estructura_ParadaJS.Rootobject>(text);
+
+                        var fecha = ObtenerFecha(rootobject4);
+
+                        q.Consultar($"update EYP_Unis_parada set fecha='{fecha:yyyy/MM/dd HH:mm}' where id = '{row1.ItemArray[1]}'");
+                    }
+                }
+
                 this.dtg = this.dataGridView1.DataSource as DataTable;
                 this.EmbarqueC();
                 this.dtg.Clear();
@@ -214,15 +242,12 @@ namespace ActualizadorDoctosUnigis
                 this.btn_canc.Enabled = false;
                 this.dataGridView1.Refresh();
             }
-         
-
-        
 
             dtg = dataGridView1.DataSource as DataTable;
             //Embarque(dtg
-           // q.ActualizarViaje(txt_viaje.Text,usuario);
-             
-              EmbarqueC();
+            // q.ActualizarViaje(txt_viaje.Text,usuario);
+
+            EmbarqueC();
             dtg.Clear();
             txt_viaje.Enabled = true;
             btn_canc.Enabled = false;
@@ -373,6 +398,30 @@ namespace ActualizadorDoctosUnigis
         {
 
         }
-    }
 
+        private DateTimeOffset ObtenerFecha(Estructura_ParadaJS.Rootobject ejs)
+        {
+            //foreach (Estructura_ParadaJS.Bitacora bitacora in ejs.d.Bitacora)
+            //{
+            //    if (bitacora.bitacora.Contains("Nuevo: Entregado (3)") || bitacora.bitacora.Contains("Nuevo: No Entregado (2)") || bitacora.bitacora.Contains("Nuevo: Entrega parcial (4)"))
+            //    {
+            //        DateTime utcDate = DateTime.ParseExact(bitacora.Fecha, "yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture);
+            //        DateTimeOffset utc = new DateTimeOffset(utcDate, TimeSpan.Zero);
+
+            //        return utc.ToLocalTime();
+            //    }
+            //}
+
+            var bitacora = ejs.d.Bitacora.OrderBy(b => b.Fecha).LastOrDefault(b => b.bitacora.Contains("Nuevo: Entregado (3)") || b.bitacora.Contains($"Nuevo: No Entregado (2)") || b.bitacora.Contains($"Nuevo: Entrega parcial (4)"));
+            if (bitacora != null)
+            {
+                DateTime utcDate = DateTime.ParseExact(bitacora.Fecha, "yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture);
+                DateTimeOffset utc = new DateTimeOffset(utcDate, TimeSpan.Zero);
+
+                return utc.ToLocalTime();
+            }
+
+            return DateTimeOffset.Now;
+        }
+    }
 }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ActualizadorDoctosUnigis.Models
 {
-    class Estructura_ParadaJS
+    public class Estructura_ParadaJS
     {
 
         public class Rootobject
@@ -44,8 +44,8 @@ namespace ActualizadorDoctosUnigis.Models
             public object NroComprobantePago { get; set; }
             public object InicioHorarioEstimado { get; set; }
             public object FinHorarioEstimado { get; set; }
-            public DateTime InicioHorarioPlanificado { get; set; }
-            public DateTime FinHorarioPlanificado { get; set; }
+            public DateTime? InicioHorarioPlanificado { get; set; }
+            public DateTime? FinHorarioPlanificado { get; set; }
             public object ETA { get; set; }
             public Cliente Cliente { get; set; }
             public object ClienteDador { get; set; }
