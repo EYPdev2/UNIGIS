@@ -166,7 +166,7 @@ namespace ActualizadorDoctosUnigis
                             }
                             catch (Exception ex)
                             {
-                                MessageBox.Show($"No fue posible refrescar la información del viaje en pantalla. Mensaje de error: {ex}", "Atención");
+                                MessageBox.Show($"No fue posible refrescar la información del viaje en pantalla.\n\nMensaje de error: {ex.Message}", "Atención");
                                 return;
                             }
 
@@ -190,7 +190,7 @@ namespace ActualizadorDoctosUnigis
                             }
                             catch (Exception ex)
                             {
-                                MessageBox.Show($"No fue posible consultar el deposito del viaje en UNIGIS. Mensaje de error: {ex}", "Atención");
+                                MessageBox.Show($"No fue posible consultar el deposito del viaje en UNIGIS.\n\nMensaje de error: {ex.Message}", "Atención");
                                 dataGridView1.Columns.Clear();
                                 txt_viajeV.Clear();
                                 return;
@@ -204,7 +204,7 @@ namespace ActualizadorDoctosUnigis
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show($"Ocurrio un error inesperado al intentar validar la parada. Mensaje de error: {ex}", "Atención");
+                        MessageBox.Show($"Ocurrio un error inesperado al intentar validar la parada.\n\nMensaje de error: {ex.Message}", "Atención");
                     }
                 }
                 if (senderGrid.Columns[e.ColumnIndex].Name == "Detalles")
