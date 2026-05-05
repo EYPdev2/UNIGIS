@@ -78,7 +78,7 @@ namespace ActualizadorDoctosUnigis
 
         }
 
-        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        private async void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
             var senderGrid = (DataGridView)sender;
 
@@ -87,53 +87,125 @@ namespace ActualizadorDoctosUnigis
             {
                 if (senderGrid.Columns[e.ColumnIndex].Name == "Validar")
                 {
-                    //if (dataGridView1.CurrentRow.Cells[3].Value.ToString() == "Validado")
-                    //    return;
-
-                    PARADA_JSON PJ = new PARADA_JSON();
-                    Estructura_ParadaJS.Rootobject EJS = new Estructura_ParadaJS.Rootobject();
-                    PJ.ApiKey = 1234;
-                    PJ.IdParada = Convert.ToInt32(dataGridView1.CurrentRow.Cells[1].Value);
-                    string jsonString = JsonConvert.SerializeObject(PJ);
-                    //  MessageBox.Show(dataGridView1.CurrentRow.Cells[1].Value.ToString());
-                    System.Net.ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
-                    var endpoint = new Uri("https://grupo-eyp.unigis.com/mapi/soap/logistic/service.asmx/ConsultarParadaPorId");
-                    //var result = client.GetAsync(endpoint).Result;
-                    //var xmlR = result.Content.ReadAsStringAsync().Result;
-                    var paylod = new StringContent(jsonString, Encoding.UTF8, "application/json");
-                    var result = client.PostAsync(endpoint, paylod).Result.Content.ReadAsStringAsync().Result;
-                    EJS = JsonConvert.DeserializeObject<Estructura_ParadaJS.Rootobject>(result);
-                    DataTable dtC = q.CoordenadasDeposito(z);
-                    string SXML = xml.stringtoxmlM(EJS, Convert.ToDouble(dtC.Rows[0].ItemArray[0].ToString()), Convert.ToDouble(dtC.Rows[0].ItemArray[1].ToString()), dataGridView1.CurrentRow.Cells[1].Value.ToString());
-
-                    var endpoint2 = new Uri("https://grupo-eyp.unigis.com/mapi/soap/logistic/service.asmx?op=ModificarEstadoParada");
-                    //var result = client.GetAsync(endpoint).Result;
-                    //var xmlR = result.Content.ReadAsStringAsync().Result;
-                    var paylod2 = new StringContent(SXML, Encoding.UTF8, "text/xml");
-                    var result2 = client.PostAsync(endpoint2, paylod2).Result.StatusCode.ToString();
-
-                    if (result2 =="OK" )
+                    try
                     {
-                        MessageBox.Show("Actualización Correcta");
-                        dataGridView1.Columns.Clear();
-                        dataGridView1.DataSource = q.consultarviaje(Convert.ToInt32(txt_viajeV.Text));
+                        //if (dataGridView1.CurrentRow.Cells[3].Value.ToString() == "Validado")
+                        //    return;
+                        Estructura_ParadaJS.Rootobject EJS = new Estructura_ParadaJS.Rootobject();
+                        PARADA_JSON PJ = new PARADA_JSON
+                        {
+                            ApiKey = 1234,
+                            IdParada = Convert.ToInt32(dataGridView1.CurrentRow.Cells[1].Value)
+                        };
 
-                        button.Name = "Validar";
-                        button.HeaderText = "Validar";
-                        button.Text = "Validar";
-                        button.UseColumnTextForButtonValue = true;
+                        try
+                        {
 
-                        button2.Name = "Detalles";
-                        button2.HeaderText = "Detalles";
-                        button2.Text = "Detalles";
-                        button2.UseColumnTextForButtonValue = true;
-                        button2.Width = 50;
-                        this.dataGridView1.Columns.Add(button);
-                        this.dataGridView1.Columns.Add(button2);
-                        z = q.Deposito_viaje(txt_viajeV.Text);
-                        colorear(dataGridView1);
+                            string jsonString = JsonConvert.SerializeObject(PJ);
+                            //  MessageBox.Show(dataGridView1.CurrentRow.Cells[1].Value.ToString());
+                            System.Net.ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
+                            var endpoint = new Uri("https://grupo-eyp.unigis.com/mapi/soap/logistic/service.asmx/ConsultarParadaPorId");
+                            //var result = client.GetAsync(endpoint).Result;
+                            //var xmlR = result.Content.ReadAsStringAsync().Result;
+                            var paylod = new StringContent(jsonString, Encoding.UTF8, "application/json");
+                            var result = await client.PostAsync(endpoint, paylod);
+                            var content = await result.Content.ReadAsStringAsync();
+                            EJS = JsonConvert.DeserializeObject<Estructura_ParadaJS.Rootobject>(content);
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show($"No fue posible consultar la información de la parada {PJ.IdParada}.\n\nMensaje de error: {ex.Message}", "Atención");
+                            return;
+                        }
+
+                        DataTable dtC;
+                        try
+                        {
+                            dtC = q.CoordenadasDeposito(z);
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show($"No fue posible obtener las coordenadas del deposito {z}.\n\nMensaje de error: {ex.Message}", "Atención");
+                            return;
+                        }
+
+                        if (dtC.Rows.Count == 0)
+                        {
+                            MessageBox.Show($"El deposito {z} no tiene coordenadas almacenadas.", "Atención");
+                            return;
+                        }
+
+                        string status;
+                        try
+                        {
+                            string SXML = xml.stringtoxmlM(EJS, Convert.ToDouble(dtC.Rows[0].ItemArray[0].ToString()), Convert.ToDouble(dtC.Rows[0].ItemArray[1].ToString()), dataGridView1.CurrentRow.Cells[1].Value.ToString());
+
+                            var endpoint2 = new Uri("https://grupo-eyp.unigis.com/mapi/soap/logistic/service.asmx?op=ModificarEstadoParada");
+                            //var result = client.GetAsync(endpoint).Result;
+                            //var xmlR = result.Content.ReadAsStringAsync().Result;
+                            var paylod2 = new StringContent(SXML, Encoding.UTF8, "text/xml");
+                            var result2 = await client.PostAsync(endpoint2, paylod2);
+                            status = result2.StatusCode.ToString();
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show($"No fue posible modificar el estado de la parada {PJ.IdParada}.\n\nMensaje de error: {ex.Message}", "Atención");
+                            return;
+                        }
+
+                        if (status == "OK")
+                        {
+                            MessageBox.Show("Actualización Correcta");
+                            dataGridView1.Columns.Clear();
+
+                            DataTable result;
+                            try
+                            {
+                                result = q.consultarviaje(Convert.ToInt32(txt_viajeV.Text));
+                                dataGridView1.DataSource = result;
+                            }
+                            catch (Exception ex)
+                            {
+                                MessageBox.Show($"No fue posible refrescar la información del viaje en pantalla. Mensaje de error: {ex}", "Atención");
+                                return;
+                            }
+
+                            button.Name = "Validar";
+                            button.HeaderText = "Validar";
+                            button.Text = "Validar";
+                            button.UseColumnTextForButtonValue = true;
+
+                            button2.Name = "Detalles";
+                            button2.HeaderText = "Detalles";
+                            button2.Text = "Detalles";
+                            button2.UseColumnTextForButtonValue = true;
+                            button2.Width = 50;
+                            this.dataGridView1.Columns.Add(button);
+                            this.dataGridView1.Columns.Add(button2);
+
+                            try
+                            {
+                                z = q.Deposito_viaje(txt_viajeV.Text);
+                                colorear(dataGridView1);
+                            }
+                            catch (Exception ex)
+                            {
+                                MessageBox.Show($"No fue posible consultar el deposito del viaje en UNIGIS. Mensaje de error: {ex}", "Atención");
+                                dataGridView1.Columns.Clear();
+                                txt_viajeV.Clear();
+                                return;
+                            }
+                        }
+                        else
+                        {
+                            MessageBox.Show($"Un error inesperado de UNIGIS no permitió modificar el estado de la parada {PJ.IdParada}.", "Atención");
+                            return;
+                        }
                     }
-
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Ocurrio un error inesperado al intentar validar la parada. Mensaje de error: {ex}", "Atención");
+                    }
                 }
                 if (senderGrid.Columns[e.ColumnIndex].Name == "Detalles")
                 {
