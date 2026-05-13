@@ -349,6 +349,11 @@ namespace ActualizadorDoctosUnigis
                     string x = "select Deposito_Ref from EYP_Unis_parada  where IdViaje = '" + txt_viajeV.Text + "' and tipoobjeto = 'Viaje' and Estado = 'Inactivo'";
 
                     DataTable auth = q.Consultar("select Deposito_Ref from EYP_Unis_parada  where IdViaje = '"+txt_viajeV.Text+"' and tipoobjeto = 'Viaje'  ");
+                    if (auth.Rows.Count == 0)
+                    {
+                        MessageBox.Show($"El viaje {txt_viajeV.Text} no existe en UNIGIS. Verifique que el número de viaje sea correcto.", "ATENCIÓN");
+                        return;
+                    }
 
                     if (!EstabUser(usuario, auth.Rows[0].ItemArray[0].ToString()))
                     {
