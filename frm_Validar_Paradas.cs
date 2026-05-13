@@ -346,9 +346,8 @@ namespace ActualizadorDoctosUnigis
                     ////    return;
                     ////}
                     ///
-                    string x = "select Deposito_Ref from EYP_Unis_parada  where IdViaje = '" + txt_viajeV.Text + "' and tipoobjeto = 'Viaje' and Estado = 'Inactivo'";
 
-                    DataTable auth = q.Consultar("select Deposito_Ref from EYP_Unis_parada  where IdViaje = '"+txt_viajeV.Text+"' and tipoobjeto = 'Viaje'  ");
+                    DataTable auth = q.Consultar("select Deposito_Ref from EYP_Unis_parada where IdViaje = '"+txt_viajeV.Text+"' and tipoobjeto = 'Viaje' and Estado = 'Inactivo'");
                     if (auth.Rows.Count == 0)
                     {
                         MessageBox.Show($"El viaje {txt_viajeV.Text} no existe en UNIGIS. Verifique que el número de viaje sea correcto.", "ATENCIÓN");
@@ -361,7 +360,6 @@ namespace ActualizadorDoctosUnigis
                         txt_viajeV.Text = "";
                         return;
                     }
-
 
                     dataGridView1.Columns.Clear();
                     dataGridView1.DataSource = q.consultarviaje(Convert.ToInt32(txt_viajeV.Text));
