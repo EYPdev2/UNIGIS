@@ -135,17 +135,36 @@ namespace ActualizadorDoctosUnigis
                         row2["IdParada"] = (object)row1.ItemArray[0].ToString();
                         row2["Ref.Documento"] = (object)this.cpr.d.RefDocumento;
                         row2["Producto"] = (object)items.RefDocumento;
-                        row2["Cantidad"] = !(items.Cantidad == 0M) ? (object)items.Cantidad : (object)items.Bulto;
-                        row2["Cantidad_Entregada"] = (object)items.CantidadEntregada;
+                        //row2["Cantidad"] = !(items.Cantidad == 0M) ? (object)items.Cantidad : (object)items.Bulto;
+                        //row2["Cantidad_Entregada"] = (object)items.CantidadEntregada;
                         row2["Estatus"] = (object)this.cpr.d.EstadoParada;
                         int idParada = obtenerParadasRequest.IdParada;
-                        if (this.ObtenerParadaestado(idParada.ToString()).Trim() == "Entregado")
-                            row2["Cantidad_Entregada"] = !(items.Cantidad == 0M) ? (object)items.Cantidad : (object)items.Bulto;
-                        idParada = obtenerParadasRequest.IdParada;
-                        if (this.ObtenerParadaestado(idParada.ToString()) == "Entrega parcial")
+                        //if (this.ObtenerParadaestado(idParada.ToString()).Trim() == "Entregado")
+                        //    row2["Cantidad_Entregada"] = !(items.Cantidad == 0M) ? (object)items.Cantidad : (object)items.Bulto;
+                        //idParada = obtenerParadasRequest.IdParada;
+                        //if (this.ObtenerParadaestado(idParada.ToString()) == "Entrega parcial")
+                        //{
+                        //    row2["Cantidad"] = !(items.Cantidad == 0M) ? (object)(items.Cantidad + items.CantidadEntregada) : (object)(items.Bulto + items.CantidadEntregada);
+                        //    row2["Cantidad"] = (object)(items.Cantidad + items.CantidadEntregada);
+                        //}
+                        var estadoParada = ObtenerParadaestado(idParada.ToString()).Trim();
+                        if (estadoParada != "Entrega parcial")
                         {
-                            row2["Cantidad"] = !(items.Cantidad == 0M) ? (object)(items.Cantidad + items.CantidadEntregada) : (object)(items.Bulto + items.CantidadEntregada);
-                            row2["Cantidad"] = (object)(items.Cantidad + items.CantidadEntregada);
+                            row2["Cantidad"] = items.CantidadEntregada != 0 ? (items.CantidadEntregada + items.Cantidad) : items.Cantidad;
+
+                            if (estadoParada == "Entregado")
+                            {
+                                row2["Cantidad_Entregada"] = row2["Cantidad"];
+                            }
+                            else
+                            {
+                                row2["Cantidad_Entregada"] = 0;
+                            }
+                        }
+                        else
+                        {
+                            row2["Cantidad"] = items.Cantidad + items.CantidadEntregada;
+                            row2["Cantidad_Entregada"] = items.CantidadEntregada;
                         }
                         this.dtg.Rows.Add(row2);
                     }
@@ -165,7 +184,7 @@ namespace ActualizadorDoctosUnigis
         }
         public string ObtenerParadaestado(string idparada)
         {
-            string sql = "select top 1 Estado ,id from EYP_Unis_parada where IdParada='"+idparada+"' and Estado in ('Entregado','No Entregado', 'Entrega Parcial') order by id desc";
+            string sql = "select top 1 Estado ,id from EYP_Unis_parada where IdParada='"+idparada+ "' and Estado in ('Entregado','No Entregado', 'Entrega Parcial') order by id desc";
             DataTable de = q.Consultar(sql);
             return de.Rows[0].ItemArray[0].ToString();
         }

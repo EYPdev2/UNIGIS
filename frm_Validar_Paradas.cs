@@ -223,15 +223,20 @@ namespace ActualizadorDoctosUnigis
                     var paylod = new StringContent(jsonString, Encoding.UTF8, "application/json");
                     var result = client.PostAsync(endpoint, paylod).Result.Content.ReadAsStringAsync().Result;
                     EJS = JsonConvert.DeserializeObject<Estructura_ParadaJS.Rootobject>(result);
-                    DataTable dtC = q.Consultar("select top 1 Estado from EYP_Unis_parada where idParada='" + dataGridView1.CurrentRow.Cells[1].Value + "' and idViaje='" + dataGridView1.CurrentRow.Cells[0].Value + "' and Estado not in ('Validado','Liberado') order by id desc");
+                    //DataTable dtC = q.Consultar("select top 1 Estado from EYP_Unis_parada where idParada='" + dataGridView1.CurrentRow.Cells[1].Value + "' and idViaje='" + dataGridView1.CurrentRow.Cells[0].Value + "' and Estado not in ('Validado','Liberado') order by id desc");
                     //MessageBox.Show(dtC.Rows[0].ItemArray[0].ToString());
                     // xml.stringtoxmlM(EJS, Convert.ToDouble(dtC.Rows[0].ItemArray[0].ToString()), Convert.ToDouble(dtC.Rows[0].ItemArray[0].ToString()), dataGridView1.CurrentRow.Cells[1].Value.ToString());
                     // itemstoDT(EJS, dtC.Rows[0].ItemArray[0].ToString());
-                    frm_detalle_parada dtp = new frm_detalle_parada(dataGridView1.CurrentRow.Cells[1].Value.ToString(), dtC.Rows[0].ItemArray[0].ToString(), itemstoDT(EJS, dtC.Rows[0].ItemArray[0].ToString()));
+
+                    //var resultado1 = q.Consultar($"SELECT TOP 1 Estado FROM EYP_Unis_parada WITH(NOLOCK) WHERE IdParada = '{dataGridView1.CurrentRow.Cells[1].Value}' AND Estado in ('Entregado', 'No Entregado', 'Entrega parcial') AND id not in (907954,907956,907957,907958) ORDER BY id ASC");
+                    //var estadoInicial = resultado1.Rows[0].ItemArray[0].ToString();
+
+                    var resultado = q.Consultar($"SELECT TOP 1 Estado FROM EYP_Unis_parada WITH(NOLOCK) WHERE IdParada = '{dataGridView1.CurrentRow.Cells[1].Value}' AND Estado in ('Entregado', 'No Entregado', 'Entrega parcial') ORDER BY id DESC");
+                    var estado = resultado.Rows[0].ItemArray[0].ToString();
+
+                    frm_detalle_parada dtp = new frm_detalle_parada(dataGridView1.CurrentRow.Cells[1].Value.ToString(), estado, ItemstoDT(EJS, estado));
                     dtp.ShowDialog();
                 }
-
-
             }
         }
 
@@ -268,7 +273,8 @@ namespace ActualizadorDoctosUnigis
             }
 
         }
-        private DataTable itemstoDT(Estructura_ParadaJS.Rootobject EJS, string Estado)
+
+        private DataTable ItemstoDT(Estructura_ParadaJS.Rootobject EJS, string estado)
         {
             DataTable dt = new DataTable();
             DataColumn dc = new DataColumn("Producto", typeof(String));
@@ -281,44 +287,71 @@ namespace ActualizadorDoctosUnigis
             dt.Columns.Add(dc);
             dc = new DataColumn("Motivo", typeof(String));
             dt.Columns.Add(dc);
+
             for (int x = 0; x < EJS.d.Items.Length; x++)
             {
-
                 DataRow dr = dt.NewRow();
 
                 dr[0] = EJS.d.Items[x].RefDocumento.ToString();
                 dr[1] = EJS.d.Items[x].Descripcion.ToString();
                 dr[4] = "-";
 
-                if (Estado == "Entrega parcial")
-                {
-                    //dr[0] = EJS.d.Items[x].Motivo.ToString();
-                    dr[2] = (EJS.d.Items[x].Cantidad + EJS.d.Items[x].CantidadEntregada).ToString();
-                    dr[3] = EJS.d.Items[x].CantidadEntregada.ToString();
+                var cantidad = EJS.d.Items[x].Cantidad;
+                var cantidadEntregada = EJS.d.Items[x].CantidadEntregada;
+                var motivo = EJS.d.Items[x].Motivo;
 
-                    if (EJS.d.Items[x].Motivo  is null)
+                if (estado != "Entrega parcial")
+                {
+                    dr[2] = (cantidadEntregada != 0 ? (cantidadEntregada + cantidad) : cantidad).ToString();
+
+                    if (estado == "Entregado")
                     {
-                        dr[4] = "-";
+                        dr[3] = dr[2];
                     }
                     else
-                    dr[4] = EJS.d.Items[x].Motivo.ToString();
-                }
-                else if (Estado == "Entregado")
-                {
-                    dr[2] = EJS.d.Items[x].Cantidad.ToString();
-                    dr[3] = EJS.d.Items[x].Cantidad.ToString();
+                    {
+                        dr[3] = 0;
+                    }
                 }
                 else
                 {
-                    dr[2] = EJS.d.Items[x].Cantidad.ToString();
-                    dr[3] = 0;
+                    dr[2] = (cantidad + cantidadEntregada).ToString();
+                    dr[3] = cantidadEntregada.ToString();
+
+                    if (motivo != null)
+                    {
+                        dr[4] = motivo.ToString();
+                    }
                 }
 
+                //string Estado = estadoFinal;
 
+                //if (Estado == "Entrega parcial")
+                //{
+                //    dr[2] = (cantidad + cantidadEntregada).ToString();
+                //    dr[3] = cantidadEntregada.ToString();
+
+                //    if (motivo != null)
+                //    {
+                //        dr[4] = motivo.ToString();
+                //    }
+                //}
+                //else
+                //{
+                //    dr[2] = (estadoInicial == "Entrega parcial" ? (cantidad + cantidadEntregada) : cantidad).ToString();
+
+                //    if (Estado == "Entregado")
+                //    {
+                //        dr[3] = dr[2];
+                //    }
+                //    else
+                //    {
+                //        dr[3] = 0;
+                //    }
+                //}
 
                 dt.Rows.Add(dr);
             }
-
 
             return dt;
         }
