@@ -6,6 +6,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Net.Http;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace ActualizadorDoctosUnigis
 {
@@ -816,33 +817,26 @@ namespace ActualizadorDoctosUnigis
 
         }
 
-        public string Deposito_viaje(  string viaje)
+        public async Task<string> Deposito_viaje(string viaje)
         {
+            ConsultaViajeID opr = new ConsultaViajeID
+            {
+                ApiKey = "1234",
+                IdViaje = Convert.ToInt32(viaje)
+            };
 
-                ConsultaViajeID opr = new ConsultaViajeID();
-                opr.ApiKey = "1234";
-            opr.IdViaje = Convert.ToInt32(viaje);
-                string jsonString = JsonConvert.SerializeObject(opr);
-                using (var client = new HttpClient())
-                {
+            string jsonString = JsonConvert.SerializeObject(opr);
+            
+            using (var client = new HttpClient())
+            {
+                var endpoint = new Uri("https://grupo-eyp.unigis.com/mapi/soap/logistic/service.asmx/ConsultarViaje");
+                var paylod = new StringContent(jsonString, Encoding.UTF8, "application/json");
+                var result = await client.PostAsync(endpoint, paylod);
+                var content = await result.Content.ReadAsStringAsync();
 
-                    var endpoint = new Uri("https://grupo-eyp.unigis.com/mapi/soap/logistic/service.asmx/ConsultarViaje");
-                    //var result = client.GetAsync(endpoint).Result;
-                    //var xmlR = result.Content.ReadAsStringAsync().Result;
-
-                    var paylod = new StringContent(jsonString, Encoding.UTF8, "application/json");
-                    var result = client.PostAsync(endpoint, paylod).Result.Content.ReadAsStringAsync().Result;
-                    // MessageBox.Show(result);
-
-
-                    string deposito = JsonConvert.DeserializeObject<ObtenerViaje_Response.Rootobject>(result).d.DepositoSalida.RefDepositoExterno.ToString();
+                string deposito = JsonConvert.DeserializeObject<ObtenerViaje_Response.Rootobject>(content).d.DepositoSalida.RefDepositoExterno.ToString();
                 return deposito;
-                     
-
-                }
-                 
-             
-
+            }
         }
 
         public DataTable ParadasViaje(string idViaje)

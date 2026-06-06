@@ -53,7 +53,6 @@ namespace ActualizadorDoctosUnigis
             this.txt_viajeV.TabIndex = 1;
             this.txt_viajeV.TextChanged += new System.EventHandler(this.txt_viajeV_TextChanged);
             this.txt_viajeV.KeyDown += new System.Windows.Forms.KeyEventHandler(this.textBox1_KeyDown);
-            this.txt_viajeV.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBox1_KeyPress);
             // 
             // dataGridView1
             // 
