@@ -46,17 +46,6 @@ namespace ActualizadorDoctosUnigis
             }
         }
 
-        private void button_Click(object sender, EventArgs e)
-        {
-            MessageBox.Show("si funciona");
-
-        }
-
-        private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
-        {
-
-        }
-
         private async void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
             var senderGrid = (DataGridView)sender;
@@ -208,26 +197,20 @@ namespace ActualizadorDoctosUnigis
                 }
                 if (row.Cells[3].Value.ToString() == "Validado")
                 {
-
                     row.Cells[3].Style.BackColor = Color.Peru;
                     row.Cells[3].Style.ForeColor = Color.White;
                 }
                 if (row.Cells[3].Value.ToString() == "Entregado")
                 {
-
                     row.Cells[3].Style.BackColor = Color.Green;
                     row.Cells[3].Style.ForeColor = Color.White;
                 }
                 if (row.Cells[3].Value.ToString() == "Entrega Parcial")
                 {
-
                     row.Cells[3].Style.BackColor = Color.Green;
                     row.Cells[3].Style.ForeColor = Color.White;
                 }
-
-
             }
-
         }
 
         private DataTable ItemstoDT(Estructura_ParadaJS.Rootobject EJS, string estado)
@@ -318,69 +301,93 @@ namespace ActualizadorDoctosUnigis
             {
                 GridBusqueda gb = new GridBusqueda(txt_viajeV, usuario);
                 gb.Show();
-
             }
 
-            if (e.KeyCode == Keys.Enter)
+            if (e.KeyCode != Keys.Enter)
             {
-                if (txt_viajeV.Text != "")
-                {
-                    DataTable auth = q.Consultar("select Deposito_Ref from EYP_Unis_parada where IdViaje = '"+txt_viajeV.Text+"' and tipoobjeto = 'Viaje' and Estado = 'Inactivo'");
-                    if (auth.Rows.Count == 0)
-                    {
-                        MessageBox.Show($"El viaje {txt_viajeV.Text} no existe en UNIGIS. Verifique que el número de viaje sea correcto.", "ATENCIÓN");
-                        return;
-                    }
-
-                    if (!EstabUser(usuario, auth.Rows[0].ItemArray[0].ToString()))
-                    {
-                        MessageBox.Show("El usuario no tiene permiso para realizar movimientos en el Deposito: " + auth.Rows[0].ItemArray[0].ToString(), "ALERTA", MessageBoxButtons.OK);
-                        txt_viajeV.Text = "";
-                        return;
-                    }
-
-                    dataGridView1.Columns.Clear();
-
-                    try
-                    {
-                        z = await q.Deposito_viaje(txt_viajeV.Text);
-
-                        if (string.IsNullOrWhiteSpace(z))
-                        {
-                            throw new Exception("El viaje no tiene deposito.");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        z = "";
-                        MessageBox.Show($"No fue posible obtener el deposito del viaje. Intentelo de nuevo. Mensaje de error: {ex.Message}", "Atención");
-                        return;
-                    }
-
-                    dataGridView1.DataSource = q.consultarviaje(Convert.ToInt32(txt_viajeV.Text));
-
-                    button.Name = "Validar";
-                    button.HeaderText = "Validar";
-                    button.Text = "Validar";
-                    button.UseColumnTextForButtonValue = true;
-
-                    button2.Name = "Detalles";
-                    button2.HeaderText = "Detalles";
-                    button2.Text = "Detalles";
-                    button2.UseColumnTextForButtonValue = true;
-                    button2.Width = 50;
-                    this.dataGridView1.Columns.Add(button);
-                    this.dataGridView1.Columns.Add(button2);
-                    colorear(dataGridView1);
-                }
-                else
-                {
-                    MessageBox.Show("Favor de Proporcionar el IDVIAJE");
-                }
+                return;
             }
+
+            var viaje = txt_viajeV.Text.Trim();
+            dataGridView1.Columns.Clear();
+            z = "";
+
+            if (string.IsNullOrWhiteSpace(txt_viajeV.Text))
+            {
+                MessageBox.Show("Favor de Proporcionar el IDVIAJE");
+                return;
+            }
+
+            DataTable auth;
+            try
+            {
+                auth = q.Consultar($"select Deposito_Ref from EYP_Unis_parada where IdViaje = '{viaje}' and tipoobjeto = 'Viaje' and Estado = 'Inactivo'");
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("No fue posible buscar el viaje. Intente de nuevo.", "ATENCIÓN");
+                return;
+            }
+
+            if (auth.Rows.Count == 0)
+            {
+                MessageBox.Show($"El viaje {viaje} no existe en el sistema. Verifique que el número de viaje este correcto e intente de nuevo.", "ATENCIÓN");
+                return;
+            }
+
+            var deposito = auth.Rows[0].ItemArray[0].ToString().Trim();
+            if (string.IsNullOrEmpty(deposito))
+            {
+                MessageBox.Show($"El viaje {viaje} no tiene un deposito asociado.", "ATENCIÓN");
+                return;
+            }
+
+            bool tienePermiso;
+            try
+            {
+                tienePermiso = EstabUser(usuario, deposito);
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Ocurrio un error inesperado al consultar la información del viaje. Intentelo de nuevo.");
+                return;
+            }
+
+            if (!tienePermiso)
+            {
+                MessageBox.Show($"El usuario no tiene permiso para realizar movimientos en el deposito {deposito}", "ALERTA");
+                txt_viajeV.Text = "";
+                return;
+            }
+
+            try
+            {
+                dataGridView1.DataSource = q.consultarviaje(Convert.ToInt32(viaje));
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Ocurrio un error inesperado al consultar las paradas del viaje. Intentelo de nuevo.");
+                return;
+            }
+
+            z = deposito;
+
+            button.Name = "Validar";
+            button.HeaderText = "Validar";
+            button.Text = "Validar";
+            button.UseColumnTextForButtonValue = true;
+
+            button2.Name = "Detalles";
+            button2.HeaderText = "Detalles";
+            button2.Text = "Detalles";
+            button2.UseColumnTextForButtonValue = true;
+            button2.Width = 50;
+            dataGridView1.Columns.Add(button);
+            dataGridView1.Columns.Add(button2);
+            colorear(dataGridView1);
         }
 
-        public bool EstabUser(string U, string deposito)
+        private bool EstabUser(string U, string deposito)
         {
             DataTable du;
             DataTable dtX = new DataTable();
@@ -405,19 +412,12 @@ namespace ActualizadorDoctosUnigis
             return f;
         }
 
-        private void txt_viajeV_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
         private void frm_Validar_Paradas_FormClosing(object sender, FormClosingEventArgs e)
         {
             Microsoft.VisualBasic.Interaction.SaveSetting("Unigis-EYP", "Formularios", "TOPF4", this.Top.ToString());
             Microsoft.VisualBasic.Interaction.SaveSetting("Unigis-EYP", "Formularios", "LeftF4", this.Left.ToString());
             Microsoft.VisualBasic.Interaction.SaveSetting("Unigis-EYP", "Formularios", "WidthF4", this.Width.ToString());
             Microsoft.VisualBasic.Interaction.SaveSetting("Unigis-EYP", "Formularios", "HeightF4", this.Height.ToString());
-
-
         }
     }
 }
