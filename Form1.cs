@@ -87,13 +87,9 @@ namespace ActualizadorDoctosUnigis
                     foreach (var item in doc)
                     {
                         aux = DivDT(dtLocalC, aux, item.ToString());
-                        //MessageBox.Show(xml.stringtoxml(aux));
-                        //  string msj = xml.stringtoxml(aux).ToString();
 
                         System.Net.ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
                         var endpoint = new Uri("https://grupo-eyp.unigis.com/mapi/soap/logistic/service.asmx?op=CrearOrdenesPedido");
-                        //var result = client.GetAsync(endpoint).Result;
-                        //var xmlR = result.Content.ReadAsStringAsync().Result;
                         var paylod = new StringContent(xml.stringtoxml(aux), Encoding.UTF8, "text/xml");
                         string y = (xml.stringtoxml(aux));
                         var result = client.PostAsync(endpoint, paylod).Result.StatusCode.ToString();
@@ -427,7 +423,7 @@ namespace ActualizadorDoctosUnigis
                         drLocal["CodigoPostalEstab"] = dr["CodigoPostalEstab"];
                         drLocal["Linea"] = dr["Linea"];
                         drLocal["Sublinea"] = dr["Sublinea"];
-                        drLocal["Tipo"] = dr["Tipo"] ;
+                        drLocal["Tipo"] = dr["Tipo"];
                         DTA.Rows.Add(drLocal);
                     }
 
@@ -780,49 +776,31 @@ namespace ActualizadorDoctosUnigis
         }
         private void ActualizarStatusPPE(DataTable aux, string cod_estab)
         {
-            string Documento;
-            string transaccion;
-            string cod_prod;
-            string fecha_doc;
-            string cantidad;
-            string fecha_actual;
-            string fecha_entreg;
-            string deposito;
-            string latitud;
-            string longi;
-
-            for (int i =0; i < aux.Rows.Count; i++)
+            foreach (DataRow row in aux.Rows)
             {
-                cod_prod=aux.Rows[i]["CODIGO ITEM"].ToString();
-                Documento = aux.Rows[i]["N° Documento"].ToString().Substring(aux.Rows[i]["N° Documento"].ToString().IndexOf('-')+1);
-                transaccion = aux.Rows[i]["N° Documento"].ToString().Substring(0, aux.Rows[i]["N° Documento"].ToString().IndexOf('-') );
-
-
-                //----------------------------------
-                fecha_doc = aux.Rows[i]["FECHA_DOC"].ToString();
-
-                cantidad = aux.Rows[i]["CANTIDAD"].ToString();
-                fecha_entreg = aux.Rows[i]["FechaEntrega"].ToString();
-
-
-
-                latitud = aux.Rows[i]["LATITUD"].ToString();
-                longi = aux.Rows[i]["LONGITUD"].ToString();
-                deposito = aux.Rows[i]["RefDepositoExterno"].ToString();
-
-
-                fecha_actual = DateTime.Now.ToString("dd/MM/yy H:mm tt");
-                switch (transaccion) {
-                    case ("FC"): transaccion = "36"; break;
-                    case ("RC"):transaccion = "37";break;
-                    case ("PE"):transaccion = "29";break;
-                    case ("EdMaC"):transaccion = "713";break;
-                    case ("TE"): transaccion = "35"; break;
+                var nDoc             = row["N° DOCUMENTO"].ToString();
+                var cod_prod         = row["CODIGO ITEM"].ToString().Trim();
+                var Documento        = nDoc.Substring(nDoc.IndexOf('-') + 1);
+                var transaccion      = nDoc.Substring(0, nDoc.IndexOf('-'));
+                switch (transaccion)
+                {
+                    case "FC":    transaccion = "36";  break;
+                    case "RC":    transaccion = "37";  break;
+                    case "PE":    transaccion = "29";  break;
+                    case "EdMaC": transaccion = "713"; break;
+                    case "TE":    transaccion = "35";  break;
                 }
-                //q.Historico_envio(Documento, transaccion, cod_prod, fecha_doc, cantidad, fecha_actual, deposito, user, latitud, longi, fecha_entreg);
-                q.UpdatePPE(cod_prod, Documento, transaccion,cod_estab,"1");
 
-            
+                q.UpdatePPE(cod_prod, Documento, transaccion, cod_estab, "1");
+                q.HistoricoEnvio(
+                    nDoc.Trim(),
+                    cod_prod,
+                    row["CANTIDAD"].ToString().Trim(),
+                    row["RefDepositoExterno"].ToString().Trim(),
+                    user,
+                    row["FechaEntrega"].ToString().Trim(),
+                    row["LATITUD"].ToString().Trim(),
+                    row["LONGITUD"].ToString().Trim());
             }
         }
 
