@@ -515,43 +515,86 @@ namespace ActualizadorDoctosUnigis
                 }
             }
         }
+
         private void DataGridView1_CellValidating(object sender, DataGridViewCellValidatingEventArgs e)
         {
             DataGridView dataGridView = sender as DataGridView;
-            if (!(dataGridView.Columns[e.ColumnIndex].Name == "CANTIDAD"))
+            if (dataGridView.Columns[e.ColumnIndex].Name != "CANTIDAD")
                 return;
-            string s = e.FormattedValue.ToString();
-            Decimal num1 = Convert.ToDecimal(this.DAux.Rows[e.RowIndex].ItemArray[e.ColumnIndex - 1].ToString());
-            Decimal num2 = Convert.ToDecimal(this.q.Consultar($"select peso_total from productos where cod_prod= '{this.DAux.Rows[e.RowIndex].ItemArray[e.ColumnIndex - 3]?.ToString()}'").Rows[0].ItemArray[0]);
-            if (num2 == 0M)
-                num2 = Convert.ToDecimal("0.01");
-            Decimal result;
-            if (Decimal.TryParse(s, out result))
+
+            try
             {
-                if (result > num1)
+                DataGridViewRow fila = dataGridView.Rows[e.RowIndex];
+                string codProd = fila.Cells["CODIGO ITEM"].Value?.ToString().Trim();
+                string doc = fila.Cells["N° DOCUMENTO"].Value?.ToString().Trim();
+                string transaccion = fila.Cells["Transaccion"].Value?.ToString().Trim();
+
+                DataRow original = null;
+                foreach (DataRow r in DAux.Rows)
                 {
-                    dataGridView.Rows[e.RowIndex].Cells[e.ColumnIndex].Value = (object)num1;
-                    dataGridView.Rows[e.RowIndex].Cells[e.ColumnIndex + 3].Value = (object)(num1 * num2);
-                    e.Cancel = true;
-                    int num3 = (int)MessageBox.Show($"La cantidad máxima permitida es {num1}.", "Límite Excedido", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-                    this.dataGridView1.Refresh();
+                    if (r["CODIGO ITEM"].ToString().Trim() == codProd &&
+                        r["N° DOCUMENTO"].ToString().Trim() == doc)
+                    {
+                        original = r;
+                        break;
+                    }
                 }
-                else if (result != num1)
+                if (original == null)
+                    return;
+
+                decimal cantidadMaxima = Convert.ToDecimal(original["CANTIDAD"]);
+
+                bool pesoEnCero = transaccion == "848";
+
+                if (!pesoEnCero && transaccion == "30")
                 {
-                    dataGridView.Rows[e.RowIndex].Cells["Peso_KG"].Value = (object)(result * num2);
-                    this.dataGridView1.Refresh();
+                    string folio = doc.Substring(doc.IndexOf('-') + 1);
+                    bool esOrdenCompra = (folio.Length >= 3 && char.ToUpperInvariant(folio[2]) == 'X')
+                                      || (folio.Length >= 4 && char.ToUpperInvariant(folio[3]) == 'X');
+                    pesoEnCero = !esOrdenCompra;
+                }
+
+                decimal pesoUnitario;
+                if (pesoEnCero)
+                {
+                    pesoUnitario = 0M;
+                }
+                else
+                {
+                    pesoUnitario = 0.01M;
+                    DataTable pesoDt = q.Consultar($"select peso_total from productos where cod_prod = '{codProd}'");
+                    if (pesoDt.Rows.Count > 0 && pesoDt.Rows[0][0] != DBNull.Value)
+                        pesoUnitario = Convert.ToDecimal(pesoDt.Rows[0][0]);
+                    if (pesoUnitario == 0M)
+                        pesoUnitario = 0.01M;
+                }
+
+                decimal cantidadNueva;
+                if (!Decimal.TryParse(e.FormattedValue?.ToString(), out cantidadNueva))
+                {
+                    e.Cancel = true;
+                    fila.Cells["CANTIDAD"].Value = cantidadMaxima;
+                    fila.Cells["Peso_KG"].Value = cantidadMaxima * pesoUnitario;
+                    MessageBox.Show("Por favor, ingrese solo números enteros válidos.", "Error de Formato", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+                }
+                else if (cantidadNueva > cantidadMaxima)
+                {
+                    e.Cancel = true;
+                    fila.Cells["CANTIDAD"].Value = cantidadMaxima;
+                    fila.Cells["Peso_KG"].Value = cantidadMaxima * pesoUnitario;
+                    MessageBox.Show($"La cantidad máxima permitida es {cantidadMaxima}.", "Límite Excedido", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                }
+                else
+                {
+                    fila.Cells["Peso_KG"].Value = cantidadNueva * pesoUnitario;
                 }
             }
-            else
+            catch (Exception)
             {
                 e.Cancel = true;
-                dataGridView.Rows[e.RowIndex].Cells[e.ColumnIndex].Value = (object)num1;
-                dataGridView.Rows[e.RowIndex].Cells["Peso_KG"].Value = (object)(num1 * num2);
-                int num4 = (int)MessageBox.Show("Por favor, ingrese solo números enteros válidos.", "Error de Formato", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+                MessageBox.Show("No fue posible validar la cantidad. Por favor intente de nuevo.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
-
 
         private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
