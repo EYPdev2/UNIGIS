@@ -46,10 +46,6 @@ namespace ActualizadorDoctosUnigis
             this.cancelarLiquidacionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.cancelarDocumentosToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.revisionSolicitudesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.logisticaToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.modificarFechaEntregaV2ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.modificarRecogeMercanciaV2ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.revisionSolicitudesV2ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.windowsMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.newWindowToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.cascadeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -77,7 +73,6 @@ namespace ActualizadorDoctosUnigis
             this.menuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolsMenu,
             this.facturasToolStripMenuItem1,
-            this.logisticaToolStripMenuItem,
             this.windowsMenu,
             this.helpMenu});
             this.menuStrip.Location = new System.Drawing.Point(0, 0);
@@ -162,12 +157,11 @@ namespace ActualizadorDoctosUnigis
             // facturasToolStripMenuItem1
             // 
             this.facturasToolStripMenuItem1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.modificarFechaEntregaV2ToolStripMenuItem,
-            this.modificarRecogeMercanciaV2ToolStripMenuItem,
+            this.modificarFechaEntregaToolStripMenuItem1,
+            this.modificarRecogeMercanciaRToolStripMenuItem,
             this.cancelarLiquidacionToolStripMenuItem,
             this.cancelarDocumentosToolStripMenuItem,
-            this.modificarPickuoToolStripMenuItem,
-            this.revisionSolicitudesV2ToolStripMenuItem});
+            this.modificarPickuoToolStripMenuItem});
             this.facturasToolStripMenuItem1.Name = "facturasToolStripMenuItem1";
             this.facturasToolStripMenuItem1.Size = new System.Drawing.Size(63, 20);
             this.facturasToolStripMenuItem1.Text = "Facturas";
@@ -344,38 +338,6 @@ namespace ActualizadorDoctosUnigis
             this.revisionSolicitudesToolStripMenuItem.Text = "Revisión de Solicitudes";
             this.revisionSolicitudesToolStripMenuItem.Click += new System.EventHandler(this.revisionSolicitudesToolStripMenuItem_Click);
             //
-            // logisticaToolStripMenuItem
-            //
-            this.logisticaToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.modificarFechaEntregaToolStripMenuItem1,
-            this.modificarRecogeMercanciaRToolStripMenuItem});
-            this.logisticaToolStripMenuItem.Name = "logisticaToolStripMenuItem";
-            this.logisticaToolStripMenuItem.Size = new System.Drawing.Size(58, 20);
-            this.logisticaToolStripMenuItem.Text = "Logística";
-            //
-            // modificarFechaEntregaV2ToolStripMenuItem
-            //
-            this.modificarFechaEntregaV2ToolStripMenuItem.Enabled = false;
-            this.modificarFechaEntregaV2ToolStripMenuItem.Name = "modificarFechaEntregaV2ToolStripMenuItem";
-            this.modificarFechaEntregaV2ToolStripMenuItem.Size = new System.Drawing.Size(246, 22);
-            this.modificarFechaEntregaV2ToolStripMenuItem.Text = "Modificar Fecha Entrega";
-            this.modificarFechaEntregaV2ToolStripMenuItem.Click += new System.EventHandler(this.modificarFechaEntregaV2ToolStripMenuItem_Click);
-            //
-            // modificarRecogeMercanciaV2ToolStripMenuItem
-            //
-            this.modificarRecogeMercanciaV2ToolStripMenuItem.Enabled = false;
-            this.modificarRecogeMercanciaV2ToolStripMenuItem.Name = "modificarRecogeMercanciaV2ToolStripMenuItem";
-            this.modificarRecogeMercanciaV2ToolStripMenuItem.Size = new System.Drawing.Size(246, 22);
-            this.modificarRecogeMercanciaV2ToolStripMenuItem.Text = "Modificar Recoge Mercancía";
-            this.modificarRecogeMercanciaV2ToolStripMenuItem.Click += new System.EventHandler(this.modificarRecogeMercanciaV2ToolStripMenuItem_Click);
-            //
-            // revisionSolicitudesV2ToolStripMenuItem
-            //
-            this.revisionSolicitudesV2ToolStripMenuItem.Name = "revisionSolicitudesV2ToolStripMenuItem";
-            this.revisionSolicitudesV2ToolStripMenuItem.Size = new System.Drawing.Size(246, 22);
-            this.revisionSolicitudesV2ToolStripMenuItem.Text = "Revisión de Solicitudes";
-            this.revisionSolicitudesV2ToolStripMenuItem.Click += new System.EventHandler(this.revisionSolicitudesToolStripMenuItem_Click);
-            //
             // Main
             //
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -437,10 +399,6 @@ namespace ActualizadorDoctosUnigis
         private System.Windows.Forms.ToolStripMenuItem cancelarDocumentosToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem modificarPickuoToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem revisionSolicitudesToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem logisticaToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem modificarFechaEntregaV2ToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem modificarRecogeMercanciaV2ToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem revisionSolicitudesV2ToolStripMenuItem;
     }
 }
 

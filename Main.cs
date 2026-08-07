@@ -213,25 +213,25 @@ namespace ActualizadorDoctosUnigis
             Child_form.Show();
         }
 
-        private void modificarFechaEntregaV2ToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            frm_FechaEntregaV2 Child_form = new frm_FechaEntregaV2(usuario);
-            Child_form.MdiParent = this;
-            childFormNumber += 1;
-            Child_form.Text = "Fecha Entrega " + childFormNumber;
-            Child_form.WindowState = System.Windows.Forms.FormWindowState.Maximized;
-            Child_form.Show();
-        }
+        //private void modificarFechaEntregaV2ToolStripMenuItem_Click(object sender, EventArgs e)
+        //{
+        //    frm_FechaEntregaV2 Child_form = new frm_FechaEntregaV2(usuario);
+        //    Child_form.MdiParent = this;
+        //    childFormNumber += 1;
+        //    Child_form.Text = "Fecha Entrega " + childFormNumber;
+        //    Child_form.WindowState = System.Windows.Forms.FormWindowState.Maximized;
+        //    Child_form.Show();
+        //}
 
-        private void modificarRecogeMercanciaV2ToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            frm_RMV2 Child_form = new frm_RMV2(usuario);
-            Child_form.MdiParent = this;
-            childFormNumber += 1;
-            Child_form.Text = "Recoge Mercancia " + childFormNumber;
-            Child_form.WindowState = System.Windows.Forms.FormWindowState.Maximized;
-            Child_form.Show();
-        }
+        //private void modificarRecogeMercanciaV2ToolStripMenuItem_Click(object sender, EventArgs e)
+        //{
+        //    frm_RMV2 Child_form = new frm_RMV2(usuario);
+        //    Child_form.MdiParent = this;
+        //    childFormNumber += 1;
+        //    Child_form.Text = "Recoge Mercancia " + childFormNumber;
+        //    Child_form.WindowState = System.Windows.Forms.FormWindowState.Maximized;
+        //    Child_form.Show();
+        //}
 
         private void revisionSolicitudesToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -338,8 +338,8 @@ namespace ActualizadorDoctosUnigis
             EnvioToolStripMenuItem.Enabled = Convert.ToBoolean(Convert.ToInt32(acceso[0].ToString()));
             confirmarOrdenesToolStripMenuItem.Enabled = Convert.ToBoolean(Convert.ToInt32(acceso[1].ToString()));
             liberarParadasToolStripMenuItem.Enabled = Convert.ToBoolean(Convert.ToInt32(acceso[2].ToString()));
-            modificarFechaEntregaToolStripMenuItem1.Enabled = true;
-            modificarRecogeMercanciaRToolStripMenuItem.Enabled = true;
+            modificarFechaEntregaToolStripMenuItem1.Enabled = Convert.ToBoolean(Convert.ToInt32(acceso[3].ToString()));
+            modificarRecogeMercanciaRToolStripMenuItem.Enabled = Convert.ToBoolean(Convert.ToInt32(acceso[4].ToString()));
             cancelarLiquidacionToolStripMenuItem.Enabled = Convert.ToBoolean(Convert.ToInt32(acceso[3].ToString()));
             cancelarDocumentosToolStripMenuItem.Enabled = Convert.ToBoolean(Convert.ToInt32(acceso[0].ToString()));
             validarParadasToolStripMenuItem.Enabled = Convert.ToBoolean(Convert.ToInt32(acceso[5].ToString()));
@@ -348,14 +348,6 @@ namespace ActualizadorDoctosUnigis
             valesPendienteToolStripMenuItem.Enabled = Convert.ToBoolean(Convert.ToInt32(acceso[6].ToString()));
             modificarPickuoToolStripMenuItem.Enabled= Convert.ToBoolean(Convert.ToInt32(acceso[0].ToString()));
             revisionSolicitudesToolStripMenuItem.Enabled = true;
-
-            // FE y RM nuevos (en Facturas) controlados por el .ini, igual que los viejos.
-            modificarFechaEntregaV2ToolStripMenuItem.Enabled = Convert.ToBoolean(Convert.ToInt32(acceso[3].ToString()));
-            modificarRecogeMercanciaV2ToolStripMenuItem.Enabled = Convert.ToBoolean(Convert.ToInt32(acceso[4].ToString()));
-            // Revisar solicitudes (en Facturas) activo solo para 1 y 39.
-            revisionSolicitudesV2ToolStripMenuItem.Enabled = new[] { "1", "39" }.Contains(nivel.Trim());
-            // Menú Logística (FE y RM viejos) visible solo para 1 y 39; adentro activos para todos.
-            logisticaToolStripMenuItem.Visible = new[] { "1", "39" }.Contains(nivel.Trim());
         }
 
 
