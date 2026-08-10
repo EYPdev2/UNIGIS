@@ -263,26 +263,34 @@ namespace ActualizadorDoctosUnigis
 
         }
 
-        public DataTable SelecDocumentos(string establecimiento, string cod_estab)
+        public DataTable SelecDocumentos(string cod_estab)
         {
-            DataTable dataTable = new DataTable();
-            StringBuilder qry = new StringBuilder();
-            qry.Append("select CONCAT(RTRIM(T.abreviatura),'-' ,PPE.folio)AS Documento,PPE.folio,PPE.transaccion  , COALESCE(F.cod_estab,MI.cod_estab,'') AS Estab ,E.nombre,PPE.unidad, P.cod_prod, PPE.cantidad, P.descripcion, PPE.Status from productos_por_embarcar ppe ");
-            qry.Append("left join facremtick f on f.folio = ppe.folio  and f.transaccion = ppe.transaccion ");
-            qry.Append("LEFT JOIN movimientos_internos MI ON MI.folio = PPE.folio AND MI.transaccion = PPE.transaccion ");
-            qry.Append("left join transacciones t on t.transaccion = PPE.transaccion ");
-            qry.Append("LEFT JOIN establecimientos E ON E.cod_estab = COALESCE(F.cod_estab, MI.cod_estab, '') ");
-            qry.Append("LEFT JOIN PRODUCTOS P ON P.cod_prod = PPE.cod_prod where ppe.Status = '1' and E.cod_estab = '" + cod_estab + "'");
+            var qry = $@"
+                SELECT
+                    CONCAT(RTRIM(T.abreviatura), '-', PPE.folio) AS Documento,
+                    PPE.folio,
+                    PPE.transaccion,
+                    COALESCE(F.cod_estab, MI.cod_estab, PE.cod_estab, '') AS Estab,
+                    E.nombre,
+                    PPE.unidad,
+                    P.cod_prod,
+                    PPE.cantidad,
+                    P.descripcion,
+                    PPE.Status
+                FROM productos_por_embarcar PPE
+                LEFT JOIN facremtick F ON F.folio = PPE.folio AND F.transaccion = PPE.transaccion
+                LEFT JOIN movimientos_internos MI ON MI.folio = PPE.folio AND MI.transaccion = PPE.transaccion
+                LEFT JOIN pedestab PE ON PE.folio = PPE.folio AND PE.transaccion = PPE.transaccion
+                LEFT JOIN transacciones T ON T.transaccion = PPE.transaccion
+                LEFT JOIN establecimientos E ON E.cod_estab = COALESCE(F.cod_estab, MI.cod_estab, PE.cod_estab, '')
+                LEFT JOIN productos P ON P.cod_prod = PPE.cod_prod
+                WHERE PPE.Status = '1' AND E.cod_estab = '{cod_estab}';
+            ";
 
-            dataTable = Consultar(qry.ToString(), cod_estab);
-
-
-
-
-
-            return dataTable;
-
+            DataTable resultados = Consultar(qry.ToString(), cod_estab);
+            return resultados;
         }
+
         public DataTable Cod_estab (string establecimiento)
         {
             DataTable dtaux = new DataTable();
