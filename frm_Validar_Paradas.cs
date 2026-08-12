@@ -321,7 +321,7 @@ namespace ActualizadorDoctosUnigis
             DataTable auth;
             try
             {
-                auth = q.Consultar($"select Deposito_Ref from EYP_Unis_parada where IdViaje = '{viaje}' and tipoobjeto = 'Viaje' and Estado = 'Inactivo'");
+                auth = q.Consultar($"SELECT TOP 1 Deposito_Ref FROM EYP_Unis_parada WHERE IdViaje = '{viaje}' AND TipoObjeto = 'Viaje' AND Estado IN ('Inactivo', 'Inicio de carga', 'Fin de carga', 'Activo') AND Deposito_Ref IS NOT NULL");
             }
             catch (Exception)
             {
