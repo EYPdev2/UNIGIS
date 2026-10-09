@@ -43,7 +43,6 @@ namespace ActualizadorDoctosUnigis
             this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.label2 = new System.Windows.Forms.Label();
             this.lbl_Actualizando = new System.Windows.Forms.Label();
-            this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.ConsultarDoctos = new System.ComponentModel.BackgroundWorker();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
@@ -100,8 +99,7 @@ namespace ActualizadorDoctosUnigis
             this.dataGridView1.RowsDefaultCellStyle = dataGridViewCellStyle1;
             this.dataGridView1.Size = new System.Drawing.Size(1511, 526);
             this.dataGridView1.TabIndex = 1;
-            this.dataGridView1.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView1_CellContentClick);
-            this.dataGridView1.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView1_CellValueChanged);
+            this.dataGridView1.CellValidating += new System.Windows.Forms.DataGridViewCellValidatingEventHandler(this.DataGridView1_CellValidating);
             this.dataGridView1.Sorted += new System.EventHandler(this.dataGridView1_Sorted);
             // 
             // label1
@@ -178,7 +176,6 @@ namespace ActualizadorDoctosUnigis
             this.comboBox1.Name = "comboBox1";
             this.comboBox1.Size = new System.Drawing.Size(464, 21);
             this.comboBox1.TabIndex = 9;
-            this.comboBox1.SelectedIndexChanged += new System.EventHandler(this.comboBox1_SelectedIndexChanged);
             this.comboBox1.SelectedValueChanged += new System.EventHandler(this.comboBox1_SelectedValueChanged);
             // 
             // label2
@@ -191,7 +188,6 @@ namespace ActualizadorDoctosUnigis
             this.label2.Size = new System.Drawing.Size(100, 13);
             this.label2.TabIndex = 10;
             this.label2.Text = "Establecimiento:";
-            this.label2.Click += new System.EventHandler(this.label2_Click);
             // 
             // lbl_Actualizando
             // 
@@ -205,11 +201,6 @@ namespace ActualizadorDoctosUnigis
             this.lbl_Actualizando.TabIndex = 12;
             this.lbl_Actualizando.Text = "Consultando...";
             this.lbl_Actualizando.Visible = false;
-            // 
-            // timer1
-            // 
-            this.timer1.Interval = 30000;
-            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
             // ConsultarDoctos
             // 
@@ -226,13 +217,11 @@ namespace ActualizadorDoctosUnigis
             // splitContainer1.Panel1
             // 
             this.splitContainer1.Panel1.Controls.Add(this.splitContainer2);
-            this.splitContainer1.Panel1.Paint += new System.Windows.Forms.PaintEventHandler(this.splitContainer1_Panel1_Paint);
             this.splitContainer1.Panel1MinSize = 0;
             // 
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.Controls.Add(this.splitContainer4);
-            this.splitContainer1.Panel2.Paint += new System.Windows.Forms.PaintEventHandler(this.splitContainer1_Panel2_Paint);
             this.splitContainer1.Panel2MinSize = 0;
             this.splitContainer1.Size = new System.Drawing.Size(1552, 697);
             this.splitContainer1.SplitterDistance = 1510;
@@ -259,7 +248,6 @@ namespace ActualizadorDoctosUnigis
             this.splitContainer2.Panel1.Controls.Add(this.label1);
             this.splitContainer2.Panel1.Controls.Add(this.label2);
             this.splitContainer2.Panel1.Controls.Add(this.comboBox1);
-            this.splitContainer2.Panel1.Paint += new System.Windows.Forms.PaintEventHandler(this.splitContainer2_Panel1_Paint);
             this.splitContainer2.Panel1MinSize = 0;
             // 
             // splitContainer2.Panel2
@@ -286,7 +274,6 @@ namespace ActualizadorDoctosUnigis
             this.splitContainer3.Panel1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.splitContainer3.Panel1.Controls.Add(this.lbl_Actualizando);
             this.splitContainer3.Panel1.Controls.Add(this.dataGridView1);
-            this.splitContainer3.Panel1.Paint += new System.Windows.Forms.PaintEventHandler(this.splitContainer3_Panel1_Paint);
             // 
             // splitContainer3.Panel2
             // 
@@ -317,7 +304,6 @@ namespace ActualizadorDoctosUnigis
             this.splitContainer4.SplitterDistance = 34;
             this.splitContainer4.SplitterWidth = 5;
             this.splitContainer4.TabIndex = 0;
-            this.splitContainer4.SplitterMoved += new System.Windows.Forms.SplitterEventHandler(this.splitContainer4_SplitterMoved);
             // 
             // cmb_letra
             // 
@@ -395,7 +381,6 @@ namespace ActualizadorDoctosUnigis
             this.button3.TabIndex = 19;
             this.button3.Text = " ";
             this.button3.UseVisualStyleBackColor = true;
-            this.button3.Click += new System.EventHandler(this.button3_Click_1);
             // 
             // Form1
             // 
@@ -411,7 +396,6 @@ namespace ActualizadorDoctosUnigis
             this.Text = "Enviar Documentos";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
-            this.ResizeEnd += new System.EventHandler(this.Form1_ResizeEnd);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel2.ResumeLayout(false);
@@ -448,7 +432,6 @@ namespace ActualizadorDoctosUnigis
         private System.Windows.Forms.ComboBox comboBox1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label lbl_Actualizando;
-        private System.Windows.Forms.Timer timer1;
         private System.ComponentModel.BackgroundWorker ConsultarDoctos;
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.SplitContainer splitContainer2;
