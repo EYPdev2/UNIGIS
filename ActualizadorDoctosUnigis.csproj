@@ -215,6 +215,10 @@
     <Compile Include="Contoller\Formulario.cs" />
     <Compile Include="Contoller\Libreria.cs" />
     <Compile Include="Contoller\Post.cs" />
+    <Compile Include="Exceptions\PeticionCambioPendienteExisteException.cs" />
+    <Compile Include="Exceptions\LimiteCancelacionesDiariasException.cs" />
+    <Compile Include="Exceptions\SolicitudYaCanceladaException.cs" />
+    <Compile Include="Exceptions\SolicitudYaRevisadaException.cs" />
     <Compile Include="Form1Vista.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -287,11 +291,47 @@
     <Compile Include="frm_RM.Designer.cs">
       <DependentUpon>frm_RM.cs</DependentUpon>
     </Compile>
+    <Compile Include="frm_RMV2.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frm_RMV2.Designer.cs">
+      <DependentUpon>frm_RMV2.cs</DependentUpon>
+    </Compile>
     <Compile Include="frm_FechaEntrega.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="frm_FechaEntrega.Designer.cs">
       <DependentUpon>frm_FechaEntrega.cs</DependentUpon>
+    </Compile>
+    <Compile Include="frm_FechaEntregaV2.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frm_FechaEntregaV2.Designer.cs">
+      <DependentUpon>frm_FechaEntregaV2.cs</DependentUpon>
+    </Compile>
+    <Compile Include="frm_Revisar.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frm_Revisar.Designer.cs">
+      <DependentUpon>frm_Revisar.cs</DependentUpon>
+    </Compile>
+    <Compile Include="frm_RevisionSolicitudes.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frm_RevisionSolicitudes.Designer.cs">
+      <DependentUpon>frm_RevisionSolicitudes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="frm_SolicitudCambio.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frm_SolicitudCambio.Designer.cs">
+      <DependentUpon>frm_SolicitudCambio.cs</DependentUpon>
+    </Compile>
+    <Compile Include="frm_SolicitudCambioRM.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frm_SolicitudCambioRM.Designer.cs">
+      <DependentUpon>frm_SolicitudCambioRM.cs</DependentUpon>
     </Compile>
     <Compile Include="frm_Validar_Paradas.cs">
       <SubType>Form</SubType>
@@ -405,11 +445,17 @@
     <EmbeddedResource Include="Frm_Liquidacion.resx">
       <DependentUpon>Frm_Liquidacion.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="frm_Revisar.resx">
+      <DependentUpon>frm_Revisar.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="frm_RM.resx">
       <DependentUpon>frm_RM.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="frm_FechaEntrega.resx">
       <DependentUpon>frm_FechaEntrega.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frm_SolicitudCambio.resx">
+      <DependentUpon>frm_SolicitudCambio.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="frm_ValidaParada.resx">
       <DependentUpon>frm_ValidaParada.cs</DependentUpon>
@@ -503,6 +549,9 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="ClosedXML">
+      <Version>0.101.0</Version>
+    </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp">
       <Version>4.6.0</Version>
     </PackageReference>

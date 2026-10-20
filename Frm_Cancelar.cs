@@ -58,7 +58,7 @@ namespace ActualizadorDoctosUnigis
 
         private void ConsultarDoctos_DoWork(object sender, DoWorkEventArgs e)
         {
-            dt = q.SelecDocumentos(Estab, cod_estab);
+            dt = q.SelecDocumentos(cod_estab);
         }
 
         private void ConsultarDoctos_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)

@@ -117,7 +117,9 @@ namespace ActualizadorDoctosUnigis
             lbl_usuario.Text = "Usuario: " + usuario + " " + nombreU;
             lbl_nivel.Text = "Nivel : " + nivel;
 
-            var MyIni = new MyProg.IniFile(Directory.GetCurrentDirectory().ToString() + "\\config.ini");
+            var ruta = Directory.GetCurrentDirectory().ToString() + "\\config.ini";
+
+            var MyIni = new MyProg.IniFile(ruta);
 
             string x = MyIni.Read("N" + nivel, "ACCESOS");
 
@@ -207,6 +209,36 @@ namespace ActualizadorDoctosUnigis
             Child_form.MdiParent = this;
             childFormNumber += 1;
             Child_form.Text = "Fecha Entrega " + childFormNumber;
+            Child_form.WindowState = System.Windows.Forms.FormWindowState.Maximized;
+            Child_form.Show();
+        }
+
+        //private void modificarFechaEntregaV2ToolStripMenuItem_Click(object sender, EventArgs e)
+        //{
+        //    frm_FechaEntregaV2 Child_form = new frm_FechaEntregaV2(usuario);
+        //    Child_form.MdiParent = this;
+        //    childFormNumber += 1;
+        //    Child_form.Text = "Fecha Entrega " + childFormNumber;
+        //    Child_form.WindowState = System.Windows.Forms.FormWindowState.Maximized;
+        //    Child_form.Show();
+        //}
+
+        //private void modificarRecogeMercanciaV2ToolStripMenuItem_Click(object sender, EventArgs e)
+        //{
+        //    frm_RMV2 Child_form = new frm_RMV2(usuario);
+        //    Child_form.MdiParent = this;
+        //    childFormNumber += 1;
+        //    Child_form.Text = "Recoge Mercancia " + childFormNumber;
+        //    Child_form.WindowState = System.Windows.Forms.FormWindowState.Maximized;
+        //    Child_form.Show();
+        //}
+
+        private void revisionSolicitudesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            frm_RevisionSolicitudes Child_form = new frm_RevisionSolicitudes(usuario);
+            Child_form.MdiParent = this;
+            childFormNumber += 1;
+            Child_form.Text = "Revisión de Solicitudes " + childFormNumber;
             Child_form.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             Child_form.Show();
         }
@@ -315,6 +347,7 @@ namespace ActualizadorDoctosUnigis
             kGPendientesToolStripMenuItem.Enabled = Convert.ToBoolean(Convert.ToInt32(acceso[6].ToString()));
             valesPendienteToolStripMenuItem.Enabled = Convert.ToBoolean(Convert.ToInt32(acceso[6].ToString()));
             modificarPickuoToolStripMenuItem.Enabled= Convert.ToBoolean(Convert.ToInt32(acceso[0].ToString()));
+            revisionSolicitudesToolStripMenuItem.Enabled = true;
         }
 
 

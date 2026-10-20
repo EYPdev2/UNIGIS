@@ -1,5 +1,4 @@
 ﻿using ActualizadorDoctosUnigis.Contoller;
-using Microsoft.VisualBasic.CompilerServices;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -17,14 +16,10 @@ using ClosedXML.Excel;
 
 namespace ActualizadorDoctosUnigis
 {
-
     public partial class Form1 : Form
     {
-        Libreria lib = new Libreria();
         Qrys q = new Qrys();
         DataTable dt;
-        DataTable DTV;
-        DataTable DTOCD=new DataTable();
         DataTable DTFolio = new DataTable();
         Decimal Min = 24;
         Decimal Max = 0;
@@ -42,12 +37,7 @@ namespace ActualizadorDoctosUnigis
             InitializeComponent();
             this.KeyPreview = true;
             this.KeyPress += new KeyPressEventHandler(Control_KeyPress);
-           // this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
-           
         }
-
-        
-       
 
         public Form1(string u)
         {
@@ -55,11 +45,9 @@ namespace ActualizadorDoctosUnigis
             this.KeyPreview = true;
             this.KeyPress += new KeyPressEventHandler(this.Control_KeyPress);
             this.WindowState = FormWindowState.Maximized;
-            this.dataGridView1.CellValidating += new DataGridViewCellValidatingEventHandler(this.DataGridView1_CellValidating);
             this.user = u;
-
         }
-        int num;
+
         private void button1_Click(object sender, EventArgs e)
         {
             DialogResult result1 = MessageBox.Show("Deseas enviar la informacion seleccionada a Unigis una vez se envie no podra eliminarse", "Informacion ", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
@@ -77,23 +65,17 @@ namespace ActualizadorDoctosUnigis
                                     select r["N° DOCUMENTO"]).Distinct().ToList();
 
                 Validar_folio(dtLocalC, cod_estab);
-                DataTable DTPickup = validar_Pickup(doc);
                 DataTable aux = new DataTable();
                 string msg = "Actualizacion Correcta :" + Environment.NewLine;
-
 
                 if (dtLocalC.Rows.Count >= 1)
                 {
                     foreach (var item in doc)
                     {
                         aux = DivDT(dtLocalC, aux, item.ToString());
-                        //MessageBox.Show(xml.stringtoxml(aux));
-                        //  string msj = xml.stringtoxml(aux).ToString();
 
                         System.Net.ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
                         var endpoint = new Uri("https://grupo-eyp.unigis.com/mapi/soap/logistic/service.asmx?op=CrearOrdenesPedido");
-                        //var result = client.GetAsync(endpoint).Result;
-                        //var xmlR = result.Content.ReadAsStringAsync().Result;
                         var paylod = new StringContent(xml.stringtoxml(aux), Encoding.UTF8, "text/xml");
                         string y = (xml.stringtoxml(aux));
                         var result = client.PostAsync(endpoint, paylod).Result.StatusCode.ToString();
@@ -102,79 +84,27 @@ namespace ActualizadorDoctosUnigis
                         {
                             msg = msg + "Documento " + item.ToString() + Environment.NewLine;
                             ActualizarStatusPPE(aux, cod_estab);
-                            //bnt_Refrescar.PerformClick();
                         }
                         else
                         {
                             MessageBox.Show("No se ha podido Enviar el Documento");
                         }
-
-
 
                         aux.Clear();
-
                     }
 
-                    DataTable aux2 = new DataTable();
-                    List<object> pp = (from r in DTPickup.AsEnumerable()
-                                       select r["N° DOCUMENTO"]).Distinct().ToList();
-
-
-                    foreach (var itemP in pp)
-                    {
-                        aux = DivDT(DTPickup, aux2, itemP.ToString());
-                        //MessageBox.Show(xml.stringtoxml(aux));
-                        //  string msj = xml.stringtoxml(aux).ToString();
-
-                        System.Net.ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
-                        var endpoint = new Uri("https://grupo-eyp.unigis.com/mapi/soap/logistic/service.asmx?op=CrearOrdenesPedido");
-                        //var result = client.GetAsync(endpoint).Result;
-                        //var xmlR = result.Content.ReadAsStringAsync().Result;
-                        var paylod = new StringContent(xml.stringtoxml(aux2), Encoding.UTF8, "text/xml");
-                        var y = (xml.stringtoxml(aux2));
-                        var result = client.PostAsync(endpoint, paylod).Result.StatusCode.ToString();
-
-                        if (result == "OK")
-                        {
-                            msg = msg + "Documento " + itemP.ToString() + Environment.NewLine;
-                            ActualizarStatusPPE(aux2, cod_estab);
-                            //bnt_Refrescar.PerformClick();
-                        }
-                        else
-                        {
-                            MessageBox.Show("No se ha podido Enviar el Documento");
-                        }
-                    }
                     MessageBox.Show(msg, "Actualizacion de Documentos ", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    // MessageBox.Show(msg,"Actualizacion",MessageBoxButtons.OK);
-                    //
 
-                    //Qrys q = new Qrys();
-                    //DataTable dt = q.selectitems( );
-                    //MessageBox.Show(
-                    //xml.stringtoxml(dt));
-                    //using (var client = new HttpClient())
-                    //{
-                    //    var endpoint = new Uri("https://grupo-eyp.unigis.com/mapi/soap/logistic/service.asmx?op=CrearOrdenesPedido");
-                    //    //var result = client.GetAsync(endpoint).Result;
-                    //    //var xmlR = result.Content.ReadAsStringAsync().Result;
-                    //    var paylod = new StringContent(xml.stringtoxml(dt), Encoding.UTF8, "text/xml");
-                    //    var result = client.PostAsync(endpoint, paylod).Result.Content.ReadAsStringAsync().Result;
-                    //    MessageBox.Show(result.ToString());
-                    //}
                     aux.Clear();
                     dt.Clear();
-                    //dataGridView1.Sort(dataGridView1.Columns["FechaEntrega"], ListSortDirection.Ascending);
-                    //SetMinMax(dataGridView1, "400");
-                    //ColorCells(dataGridView1);
+                    dataGridView1.DataSource = null;
+                    dataGridView1.Columns.Clear();
                 }
             }
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
-
-           
             if (Microsoft.VisualBasic.Interaction.GetSetting("Unigis-EYP", "Formularios", "TOPF1").ToString() != "")
             {
                 this.Top = Convert.ToInt32(Microsoft.VisualBasic.Interaction.GetSetting("Unigis-EYP", "Formularios", "TOPF1").ToString());
@@ -182,54 +112,21 @@ namespace ActualizadorDoctosUnigis
                 this.Width = Convert.ToInt32(Microsoft.VisualBasic.Interaction.GetSetting("Unigis-EYP", "Formularios", "WidthF1").ToString());
                 this.Height = Convert.ToInt32(Microsoft.VisualBasic.Interaction.GetSetting("Unigis-EYP", "Formularios", "HeightF1").ToString());
             }
-            timer1.Start();
-           
-            //dataGridView2.DataSource = q.ValesPendientes();
-            //dataGridView2.Sort(dataGridView2.Columns["Fecha"], ListSortDirection.Ascending);
-            //SetMinMax(dataGridView2, "400");
-            //ColorCells(dataGridView2);
-            //dataGridView2.Columns["Folio_Docto"].Width = 80;
-            //dataGridView2.Columns["Transaccion"].Width = 40;
-            //Form2 frm2 = new Form2();
-            //frm2.Show();
+
             DataGridViewCheckBoxColumn chk = new DataGridViewCheckBoxColumn();
-            //chk.HeaderText = "Enviar";
-            //dataGridView1.Columns.Add(chk);
-           
+
             DataTable DTCE = new DataTable();
             DTCE = q.catalogoEstab();
             DTCE = EstabUser(user, DTCE);
-            DTOCD.Columns.Add("Delivery");
-            DTOCD.Columns.Add("PICKUP");
-            DTOCD.Columns.Add("Tipo");
 
-
-            //dt = q.selectitems();
             foreach (DataRow row in DTCE.Rows)
             {
                 comboBox1.Items.Add(row[0].ToString());
             }
-
-            //dataGridView1.DataSource = dt;
-
-            //if (dataGridView1.Rows.Count > 0)
-            //{
-            //    foreach (DataGridViewColumn col in dataGridView1.Columns)
-            //    {
-            //        if (col.Index == 0 || col.Name == "CANTIDAD")
-            //            col.ReadOnly = false;
-            //        else
-            //            col.ReadOnly = true;
-            //    }
-            //}
-            //dataGridView1.Sort(dataGridView1.Columns["FechaEntrega"],ListSortDirection.Ascending);
-            //SetMinMax(dataGridView1, "400");
-            //ColorCells(dataGridView1);
         }
+
         private DataTable DivDT(DataTable DTO, DataTable DTA, string folio)
         {
-
-            //DataTable dtLocalC = new DataTable();
             if (DTA.Columns.Count == 0)
             {
                 DTA.Columns.Add("Enviar");
@@ -359,7 +256,6 @@ namespace ActualizadorDoctosUnigis
                         drLocal["Tipo"] = dr.Cells["Tipo"].Value;
 
                         DTA.Rows.Add(drLocal);
-
                     }
                 }
             }
@@ -427,14 +323,14 @@ namespace ActualizadorDoctosUnigis
                         drLocal["CodigoPostalEstab"] = dr["CodigoPostalEstab"];
                         drLocal["Linea"] = dr["Linea"];
                         drLocal["Sublinea"] = dr["Sublinea"];
-                        drLocal["Tipo"] = dr["Tipo"] ;
+                        drLocal["Tipo"] = dr["Tipo"];
                         DTA.Rows.Add(drLocal);
                     }
-
                 }
             }
             return DTA;
         }
+
         private Color GetColorFromValie(Decimal targetValue)
         {
             if (targetValue > MaxV)
@@ -444,8 +340,10 @@ namespace ActualizadorDoctosUnigis
 
             if (targetValue == Max) { return Color.FromArgb(255, 255, 0, 0); }
             else if (targetValue == Mid) { return Color.FromArgb(255, 255, 255, 0); }
-            else if (targetValue <= minv) { 
-                return Color.FromArgb(255, 0, 255, 0); }
+            else if (targetValue <= minv)
+            {
+                return Color.FromArgb(255, 0, 255, 0);
+            }
 
             Decimal offsetValue;
             Decimal offsetSteps;
@@ -455,16 +353,16 @@ namespace ActualizadorDoctosUnigis
             {
                 offsetValue = targetValue - minv;
                 offsetSteps = offsetValue;
-                rgbValue = 255-Convert.ToInt32(offsetSteps);
+                rgbValue = 255 - Convert.ToInt32(offsetSteps);
                 rgbValue = rgbValue + 150;
                 if (rgbValue > 255) { rgbValue = 255; }
 
                 return Color.FromArgb(255, 255, rgbValue, 0);
             }
 
-
             return Color.Red;
         }
+
         private void SetMinMax(DataGridView dg, String txt)
         {
             DataTable dt = new DataTable();
@@ -477,9 +375,7 @@ namespace ActualizadorDoctosUnigis
             {
                 if (row[2].ToString().Trim() != "")
                 {
-
                     TimeSpan dias = DateTime.Now.Subtract(Convert.ToDateTime(row[2].ToString()));
-                    //MessageBox.Show(dias.TotalHours.ToString() +" "+ Convert.ToDateTime(row[2].ToString()).ToString("dd-MM-yyyyy") +" " + DateTime.Now.ToString("dd-MM-yyyyy"));
                     Temp = Convert.ToDecimal(dias.TotalHours);
                     if (Temp > Max) { Max = Temp; }
                     if (Temp < Min) { Min = Temp; }
@@ -487,11 +383,11 @@ namespace ActualizadorDoctosUnigis
             }
             Max = Convert.ToDecimal(txt);
 
-            if (Max !=0  )
+            if (Max != 0)
             {
                 Mid = (MaxV - minv) / 2;
-                Decimal total = (Max-Mid);
-                Steps = total/10;
+                Decimal total = (Max - Mid);
+                Steps = total / 10;
                 if (Steps % 2 == 0)
                 {
                     Steps = Convert.ToInt32(Steps) + 1;
@@ -501,12 +397,12 @@ namespace ActualizadorDoctosUnigis
 
         private void ColorCells(DataGridView dg)
         {
-            DataRowView dr ;
+            DataRowView dr;
             Decimal CellValue;
-            foreach (DataGridViewRow row in dg.Rows) { 
-            if (!row.IsNewRow)
+            foreach (DataGridViewRow row in dg.Rows)
+            {
+                if (!row.IsNewRow)
                 {
-
                     dr = (DataRowView)row.DataBoundItem;
                     if (dr[2].ToString().Trim() != "")
                     {
@@ -514,66 +410,99 @@ namespace ActualizadorDoctosUnigis
                         CellValue = (Decimal)dias.TotalHours;
                         Color cellColor = GetColorFromValie(CellValue);
                         row.Cells[2].Style.BackColor = cellColor;
-                       // dataGridView1.BackgroundColor = cellColor;
                     }
                 }
             }
         }
+
         private void DataGridView1_CellValidating(object sender, DataGridViewCellValidatingEventArgs e)
         {
             DataGridView dataGridView = sender as DataGridView;
-            if (!(dataGridView.Columns[e.ColumnIndex].Name == "CANTIDAD"))
+            if (dataGridView.Columns[e.ColumnIndex].Name != "CANTIDAD")
                 return;
-            string s = e.FormattedValue.ToString();
-            Decimal num1 = Convert.ToDecimal(this.DAux.Rows[e.RowIndex].ItemArray[e.ColumnIndex - 1].ToString());
-            Decimal num2 = Convert.ToDecimal(this.q.Consultar($"select peso_total from productos where cod_prod= '{this.DAux.Rows[e.RowIndex].ItemArray[e.ColumnIndex - 3]?.ToString()}'").Rows[0].ItemArray[0]);
-            if (num2 == 0M)
-                num2 = Convert.ToDecimal("0.01");
-            Decimal result;
-            if (Decimal.TryParse(s, out result))
+
+            try
             {
-                if (result > num1)
+                DataGridViewRow fila = dataGridView.Rows[e.RowIndex];
+                string codProd = fila.Cells["CODIGO ITEM"].Value?.ToString().Trim();
+                string doc = fila.Cells["N° DOCUMENTO"].Value?.ToString().Trim();
+                string transaccion = fila.Cells["Transaccion"].Value?.ToString().Trim();
+
+                DataRow original = null;
+                foreach (DataRow r in DAux.Rows)
                 {
-                    dataGridView.Rows[e.RowIndex].Cells[e.ColumnIndex].Value = (object)num1;
-                    dataGridView.Rows[e.RowIndex].Cells[e.ColumnIndex + 3].Value = (object)(num1 * num2);
-                    e.Cancel = true;
-                    int num3 = (int)MessageBox.Show($"La cantidad máxima permitida es {num1}.", "Límite Excedido", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-                    this.dataGridView1.Refresh();
+                    if (r["CODIGO ITEM"].ToString().Trim() == codProd &&
+                        r["N° DOCUMENTO"].ToString().Trim() == doc)
+                    {
+                        original = r;
+                        break;
+                    }
                 }
-                else if (result != num1)
+                if (original == null)
+                    return;
+
+                decimal cantidadMaxima = Convert.ToDecimal(original["CANTIDAD"]);
+
+                bool pesoEnCero = transaccion == "848";
+
+                if (!pesoEnCero && transaccion == "30")
                 {
-                    dataGridView.Rows[e.RowIndex].Cells["Peso_KG"].Value = (object)(result * num2);
-                    this.dataGridView1.Refresh();
+                    string folio = doc.Substring(doc.IndexOf('-') + 1);
+                    bool esOrdenCompra = (folio.Length >= 3 && char.ToUpperInvariant(folio[2]) == 'X')
+                                      || (folio.Length >= 4 && char.ToUpperInvariant(folio[3]) == 'X');
+                    pesoEnCero = !esOrdenCompra;
+                }
+
+                decimal pesoUnitario;
+                if (pesoEnCero)
+                {
+                    pesoUnitario = 0M;
+                }
+                else
+                {
+                    pesoUnitario = 0.01M;
+                    DataTable pesoDt = q.Consultar($"select peso_total from productos where cod_prod = '{codProd}'");
+                    if (pesoDt.Rows.Count > 0 && pesoDt.Rows[0][0] != DBNull.Value)
+                        pesoUnitario = Convert.ToDecimal(pesoDt.Rows[0][0]);
+                    if (pesoUnitario == 0M)
+                        pesoUnitario = 0.01M;
+                }
+
+                decimal cantidadNueva;
+                if (!Decimal.TryParse(e.FormattedValue?.ToString(), out cantidadNueva))
+                {
+                    e.Cancel = true;
+                    fila.Cells["CANTIDAD"].Value = cantidadMaxima;
+                    fila.Cells["Peso_KG"].Value = cantidadMaxima * pesoUnitario;
+                    MessageBox.Show("Por favor, ingrese solo números enteros válidos.", "Error de Formato", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+                }
+                else if (cantidadNueva > cantidadMaxima)
+                {
+                    e.Cancel = true;
+                    fila.Cells["CANTIDAD"].Value = cantidadMaxima;
+                    fila.Cells["Peso_KG"].Value = cantidadMaxima * pesoUnitario;
+                    MessageBox.Show($"La cantidad máxima permitida es {cantidadMaxima}.", "Límite Excedido", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                }
+                else
+                {
+                    fila.Cells["Peso_KG"].Value = cantidadNueva * pesoUnitario;
                 }
             }
-            else
+            catch (Exception)
             {
                 e.Cancel = true;
-                dataGridView.Rows[e.RowIndex].Cells[e.ColumnIndex].Value = (object)num1;
-                dataGridView.Rows[e.RowIndex].Cells["Peso_KG"].Value = (object)(num1 * num2);
-                int num4 = (int)MessageBox.Show("Por favor, ingrese solo números enteros válidos.", "Error de Formato", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+                MessageBox.Show("No fue posible validar la cantidad. Por favor intente de nuevo.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-        }
-
-
-
-        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        {
-
         }
 
         private void bnt_Refrescar_Click(object sender, EventArgs e)
         {
             bnt_Refrescar.Enabled = false;
-            if ((dt  != null))
-            {
-                dt.Clear();
-            }
+            dataGridView1.DataSource = null;
+            dataGridView1.Columns.Clear();
             Estab = comboBox1.SelectedItem.ToString();
-            dataGridView1.Refresh();
             lbl_Actualizando.Text = "Consultando...";
             lbl_Actualizando.Visible = true;
-             
             ConsultarDoctos.RunWorkerAsync();
         }
 
@@ -585,7 +514,6 @@ namespace ActualizadorDoctosUnigis
                 txt_horasmax.Visible = false;
                 lbl_horasmin.Visible = false;
                 txt_horasmin.Visible = false;
-               
             }
             else
             {
@@ -603,48 +531,19 @@ namespace ActualizadorDoctosUnigis
             btn_Enviar.Enabled = false;
             comboBox1.Enabled = false;
             bnt_Refrescar.Enabled = false;
-            bnt_Refrescar.Enabled = false;
-            if ((dt != null))
-            {
-                dt.Clear();
-            }
+            dataGridView1.DataSource = null;
+            dataGridView1.Columns.Clear();
             Estab = comboBox1.SelectedItem.ToString();
-            dataGridView1.Refresh();
             lbl_Actualizando.Text = "Consultando...";
             lbl_Actualizando.Visible = true;
             ConsultarDoctos.RunWorkerAsync();
-
-            }
-
-        private void timer1_Tick(object sender, EventArgs e)
-        {
-            //ActualizarVales.RunWorkerAsync();
-        }
-
-        private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
-        {
-            
-            DTV = q.ValesPendientes();
-            comboBox1.Enabled = false;
-        }
-
-        private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-        {
-           
-            //dataGridView2.DataSource = DTV;
-            //dataGridView2.Sort(dataGridView2.Columns["Fecha"], ListSortDirection.Ascending);
-            //SetMinMax(dataGridView2, "0");
-            //ColorCells(dataGridView2);
-            //dataGridView2.Columns["Folio_Docto"].Width = 80;
-            //dataGridView2.Columns["Transaccion"].Width = 40;
-            
-
         }
 
         private void ConsultarDoctos_DoWork(object sender, DoWorkEventArgs e)
         {
-            dt = q.selectitems(Estab);
-            DAux = q.selectitems(Estab);
+            DataTable datos = q.selectitems(Estab);
+            dt = datos;
+            DAux = datos.Copy();
         }
 
         private void ConsultarDoctos_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
@@ -652,6 +551,19 @@ namespace ActualizadorDoctosUnigis
             cmb_letra.Enabled = true;
             lbl_Actualizando.Visible = false;
             comboBox1.Enabled = true;
+
+            if (e.Error != null)
+            {
+                dt = null;
+                DAux = new DataTable();
+                bnt_Refrescar.Enabled = true;
+                btn_Enviar.Enabled = true;
+                button2.Enabled = true;
+                button1.Enabled = true;
+                MessageBox.Show("No fue posible consultar los documentos. Verifique la conexión con el servidor e intente de nuevo." + Environment.NewLine + Environment.NewLine + e.Error.Message, "Error de consulta", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
             try
             {
                 if (comboBox1.SelectedItem.ToString() == "")
@@ -673,7 +585,6 @@ namespace ActualizadorDoctosUnigis
                                 col.ReadOnly = true;
                             //Si la estableces a true la columna no será editable col.ReadOnly = true;
                             //Debes hacer exactamente lo contrario, establecerla a false.
-
                         }
                     }
                     dataGridView1.Sort(dataGridView1.Columns["FechaEntrega"], ListSortDirection.Ascending);
@@ -696,18 +607,12 @@ namespace ActualizadorDoctosUnigis
                             if (col.Index == 0 || col.Name == "CANTIDAD")
                                 col.ReadOnly = false;
 
-
-
-
                             else
                                 col.ReadOnly = true;
                             //Si la estableces a true la columna no será editable col.ReadOnly = true;
                             //Debes hacer exactamente lo contrario, establecerla a false.
-
                         }
                     }
-                    //dataGridView1.Sort(dataGridView1.Columns["FechaEntrega"], ListSortDirection.Ascending);
-
                 }
             }
             catch (SqlException sql)
@@ -721,8 +626,7 @@ namespace ActualizadorDoctosUnigis
             button1.Enabled = true;
             SetMinMax(dataGridView1, txt_horasmax.Text);
             ColorCells(dataGridView1);
-           // DAux = dataGridView1.DataSource as DataTable;
-            dataGridView1.Columns["Cod_cte"].Visible=false;
+            dataGridView1.Columns["Cod_cte"].Visible = false;
             dataGridView1.Columns["TEL1"].Visible = false;
             dataGridView1.Columns["tel2"].Visible = false;
             dataGridView1.Columns["FECHA MIN ENTREGA"].Visible = false;
@@ -740,7 +644,6 @@ namespace ActualizadorDoctosUnigis
             dataGridView1.Columns["IMPORTANCIA"].Visible = false;
             dataGridView1.Columns["IDENTIFICADOR CONTACTO"].Visible = false;
             dataGridView1.Columns["NOMBRE CONTACTO"].Visible = false;
-            //dataGridView1.Columns["TELEFOLO"].Visible = false;
             dataGridView1.Columns["EMAIL CONTACTO"].Visible = false;
             dataGridView1.Columns["CT ORIGEN"].Visible = false;
             dataGridView1.Columns["REFERENCIA DOMICILIO"].Visible = false;
@@ -752,144 +655,44 @@ namespace ActualizadorDoctosUnigis
             dataGridView1.Columns["NOTAS"].Width = 350;
         }
 
-        private void dataGridView2_Sorted(object sender, EventArgs e)
-        {
-            //SetMinMax(dataGridView2, txt_horasmax.Text);
-            //ColorCells(dataGridView2);
-        }
-
         private void dataGridView1_Sorted(object sender, EventArgs e)
         {
             SetMinMax(dataGridView1, txt_horasmax.Text);
             ColorCells(dataGridView1);
         }
 
-        private void button1_Click_1(object sender, EventArgs e)
-        {
-           // obtenerViaje(27);
-        }
-
-        private void lbl_Vales_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
         private void ActualizarStatusPPE(DataTable aux, string cod_estab)
         {
-            string Documento;
-            string transaccion;
-            string cod_prod;
-            string fecha_doc;
-            string cantidad;
-            string fecha_actual;
-            string fecha_entreg;
-            string deposito;
-            string latitud;
-            string longi;
-
-            for (int i =0; i < aux.Rows.Count; i++)
+            foreach (DataRow row in aux.Rows)
             {
-                cod_prod=aux.Rows[i]["CODIGO ITEM"].ToString();
-                Documento = aux.Rows[i]["N° Documento"].ToString().Substring(aux.Rows[i]["N° Documento"].ToString().IndexOf('-')+1);
-                transaccion = aux.Rows[i]["N° Documento"].ToString().Substring(0, aux.Rows[i]["N° Documento"].ToString().IndexOf('-') );
-
-
-                //----------------------------------
-                fecha_doc = aux.Rows[i]["FECHA_DOC"].ToString();
-
-                cantidad = aux.Rows[i]["CANTIDAD"].ToString();
-                fecha_entreg = aux.Rows[i]["FechaEntrega"].ToString();
-
-
-
-                latitud = aux.Rows[i]["LATITUD"].ToString();
-                longi = aux.Rows[i]["LONGITUD"].ToString();
-                deposito = aux.Rows[i]["RefDepositoExterno"].ToString();
-
-
-                fecha_actual = DateTime.Now.ToString("dd/MM/yy H:mm tt");
-                switch (transaccion) {
-                    case ("FC"): transaccion = "36"; break;
-                    case ("RC"):transaccion = "37";break;
-                    case ("PE"):transaccion = "29";break;
-                    case ("EdMaC"):transaccion = "713";break;
-                    case ("TE"): transaccion = "35"; break;
-                }
-                //q.Historico_envio(Documento, transaccion, cod_prod, fecha_doc, cantidad, fecha_actual, deposito, user, latitud, longi, fecha_entreg);
-                q.UpdatePPE(cod_prod, Documento, transaccion,cod_estab,"1");
-
-            
-            }
-        }
-
-        private void button1_Click_2(object sender, EventArgs e)
-        {
-            if (Operators.CompareString("", "" , false) != 0)
-            {
-              
-            }
-            MessageBox.Show("No entro", "Actualizacion de Documentos ", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-        }
-
-        private void Form1_ResizeEnd(object sender, EventArgs e)
-        {
-
-        }
-
-        private void dataGridView1_CellValueChanged(object sender, DataGridViewCellEventArgs e)
-        {
-            try
-            {
-
-                if (dataGridView1.CurrentRow.Cells["Cantidad"].Value != null)
-                    Convert.ToDouble(dataGridView1.CurrentRow.Cells["Cantidad"].Value.ToString());
-
-                //MessageBox.Show(ActiveControl.Text.ToString());
-            }
-            catch
-            {
-                dataGridView1.CurrentRow.Cells["Cantidad"].Value = "1";
-                return;
-            }
-            if (dataGridView1.Columns[e.ColumnIndex].Name.ToString() == "Cantidad")
-            {
-
-                string p = dataGridView1.CurrentRow.Cells["Codigo Item"].Value.ToString();
-
-                string cantidad = lib.Decimales(dataGridView1.CurrentRow.Cells["Cantidad"].Value.ToString(), p.Trim());
-                string a = DAux.Rows[dataGridView1.CurrentRow.Index]["CANTIDAD"].ToString();
-                string n = dataGridView1.Rows[dataGridView1.CurrentRow.Index].Cells[dataGridView1.CurrentCell.ColumnIndex].Value.ToString();
-
-
-                if (DAux.Rows[dataGridView1.CurrentRow.Index][dataGridView1.CurrentCell.ColumnIndex].ToString() != dataGridView1.Rows[dataGridView1.CurrentRow.Index].Cells[dataGridView1.CurrentCell.ColumnIndex].Value.ToString())
+                var nDoc = row["N° DOCUMENTO"].ToString();
+                var cod_prod = row["CODIGO ITEM"].ToString().Trim();
+                var Documento = nDoc.Substring(nDoc.IndexOf('-') + 1);
+                var transaccion = nDoc.Substring(0, nDoc.IndexOf('-'));
+                switch (transaccion)
                 {
-
-
-                    if (Convert.ToDouble(dataGridView1.Rows[dataGridView1.CurrentRow.Index].Cells["CANTIDAD"].Value.ToString()) > Convert.ToDouble(DAux.Rows[dataGridView1.CurrentRow.Index]["CANTIDAD"].ToString()))
-                    {
-                        cantidad = DAux.Rows[e.RowIndex]["CANTIDAD"].ToString();
-                        //MessageBox.Show(cantidad);
-                    }
+                    case "FC": transaccion = "36"; break;
+                    case "RC": transaccion = "37"; break;
+                    case "PE": transaccion = "29"; break;
+                    case "EdMaC": transaccion = "713"; break;
+                    case "TE": transaccion = "35"; break;
                 }
 
-
-                dt.Rows[e.RowIndex]["CANTIDAD"] = cantidad;
-                // dataGridView1.Refresh();
-
+                q.UpdatePPE(cod_prod, Documento, transaccion, cod_estab, "1");
+                q.HistoricoEnvio(
+                    nDoc.Trim(),
+                    cod_prod,
+                    row["CANTIDAD"].ToString().Trim(),
+                    row["RefDepositoExterno"].ToString().Trim(),
+                    user,
+                    row["FechaEntrega"].ToString().Trim(),
+                    row["LATITUD"].ToString().Trim(),
+                    row["LONGITUD"].ToString().Trim());
             }
-        
-          //  dataGridView1.DataSource=DAux;
-           // dataGridView1.Refresh();
         }
+
         private void Control_KeyPress(object sender, KeyPressEventArgs e)
         {
-
-
             if (dataGridView1.Rows.Count > 0)
             {
                 int columnIndex = dataGridView1.CurrentCell.ColumnIndex;
@@ -906,7 +709,7 @@ namespace ActualizadorDoctosUnigis
                     {
                         if (e.KeyChar == '.')
                         {
-                            if (ActiveControl.Text.ToString().Contains('.'))//Text.Contains('.'))
+                            if (ActiveControl.Text.ToString().Contains('.'))
                                 e.Handled = true;
                             else
                                 e.Handled = false;
@@ -916,164 +719,10 @@ namespace ActualizadorDoctosUnigis
             }
         }
 
-        private void splitContainer1_Panel1_Paint(object sender, PaintEventArgs e)
+        public DataTable EstabUser(string U, DataTable dt)
         {
-             
-        }
-
-        private void splitContainer1_Panel2_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
-
-        private void splitContainer4_SplitterMoved(object sender, SplitterEventArgs e)
-        {
-
-        }
-
-        private void splitContainer3_Panel1_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
-
-        private void button1_Click_3(object sender, EventArgs e)
-        {
-
-        }
-
-        private void button1_Click_4(object sender, EventArgs e)
-        {
-            var row = dataGridView1.Rows[dataGridView1.CurrentRow.Index];
-           // row.Cells["N° DOCUMENTO"].Value.ToString();
-            //Relacion_Pickup rp = new Relacion_Pickup(DTOCD, row.Cells["N° DOCUMENTO"].Value.ToString());
-            //rp.ShowDialog();
-        }
-
-        private void splitContainer2_Panel1_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
-
-        private void label3_Click(object sender, EventArgs e)
-        {
-
-        }
-        //metodo que crea colunmas donde se almacena la informacion del pick up
-        public DataTable validar_Pickup (List<object> doc)
-        {
-            DataTable DTP = new DataTable();
-            DTP.Columns.Add("Enviar");
-            DTP.Columns.Add("N° DOCUMENTO");
-            DTP.Columns.Add("FECHA_DOC", typeof(DateTime));
-            DTP.Columns.Add("FechaEntrega", typeof(DateTime));
-            DTP.Columns.Add("cod_cte");
-            DTP.Columns.Add("razon_social");
-            DTP.Columns.Add("tel1");
-            DTP.Columns.Add("tel2");
-            DTP.Columns.Add("e_mail");
-            DTP.Columns.Add("Peso_KG", typeof(System.Decimal));
-            DTP.Columns.Add("LATITUD", typeof(System.Decimal));
-            DTP.Columns.Add("LONGITUD", typeof(System.Decimal));
-            DTP.Columns.Add("DIRECCION");
-            DTP.Columns.Add("NOMBRE ITEM");
-            DTP.Columns.Add("CANTIDAD", typeof(System.Decimal));
-            DTP.Columns.Add("CODIGO ITEM");
-            DTP.Columns.Add("FECHA MIN ENTREGA", typeof(DateTime));
-            DTP.Columns.Add("FECHA MAX ENTREGA", typeof(DateTime));
-            DTP.Columns.Add("MIN VENTANA HORARIA 1");
-            DTP.Columns.Add("MAX VENTANA HORARIA 1");
-            DTP.Columns.Add("MIN VENTANA HORARIA 2");
-            DTP.Columns.Add("MAX VENTANA HORARIA 2");
-            DTP.Columns.Add("COSTO ITEM", typeof(System.Decimal));
-            DTP.Columns.Add("CAPACIDAD UNO", typeof(System.Decimal));
-            DTP.Columns.Add("CAPACIDAD DOS", typeof(System.Decimal));
-            DTP.Columns.Add("SERVICE TIME");
-            DTP.Columns.Add("IMPORTANCIA");
-            DTP.Columns.Add("IDENTIFICADOR CONTACTO");
-            DTP.Columns.Add("NOMBRE CONTACTO");
-            DTP.Columns.Add("TELEFONO");
-            DTP.Columns.Add("EMAIL CONTACTO");//--
-            DTP.Columns.Add("CT ORIGEN");
-            DTP.Columns.Add("REFERENCIA DOMICILIO");
-            DTP.Columns.Add("Calle");
-            DTP.Columns.Add("NumeroPuerta");
-            DTP.Columns.Add("colonia");
-            DTP.Columns.Add("Barrio");
-            DTP.Columns.Add("Localidad");
-            DTP.Columns.Add("Partido");
-            DTP.Columns.Add("Estado");
-            DTP.Columns.Add("pais");
-            DTP.Columns.Add("RefDomicilioExterno");
-            DTP.Columns.Add("DomicilioDescripcion");
-            DTP.Columns.Add("InicioHorario1");
-            DTP.Columns.Add("InicioHorario2");
-            DTP.Columns.Add("FinHorario1");
-            DTP.Columns.Add("FinHorario2");
-            DTP.Columns.Add("TiempoEspera");
-            DTP.Columns.Add("DomCodPostal");
-            DTP.Columns.Add("Contacto");
-            DTP.Columns.Add("CodigoSucursal");
-            DTP.Columns.Add("RefDepositoExterno");
-            DTP.Columns.Add("CodigoPostalEstab");
-            DTP.Columns.Add("Linea");
-            DTP.Columns.Add("Sublinea");
-            DTP.Columns.Add("Tipo");
-            foreach (var item in doc)
-            {
-                foreach(DataRow dr2 in DTOCD.Rows)
-                {
-                    if (item.ToString() == dr2[0].ToString().Trim())
-                    {
-                        agregarPickUP(DTP,dr2[0].ToString(),dr2[1].ToString(),dr2[2].ToString());
-                    }
-                }
-
-            }
-            return DTP;
-        }
-        //valida si el documento es de tipo pick up
-        public void agregarPickUP(DataTable dtp,string delivery,string pickup, string tipo)
-        {
-            string sql = "";
-            string folio = delivery.Substring(delivery.IndexOf('-')+1, delivery.Length - delivery.IndexOf('-')-1);
-            
-            if(tipo.Trim()=="30")
-            sql="select 'PP-"+folio+ "' as[N° Documento] ,mp.fecha as Fecha_DOC,GETDATE() as FechaEntrega,  rtrim(prv.cod_prv) as cod_cte  ,rtrim(prv.razon_social) as razon_social ,prv.tel1,prv.tel2,prv.e_mail,mp.peso as Peso_KG ,ISNULL(cast(prv.coordenada_x as decimal (19,8)),0) as LATITUD, ISNULL(cast(prv.coordenada_y as decimal(19,8)),0) as LONGITUD,'' as DIRECCION,rtrim(p.descripcion) as [NOMBRE ITEM], " +
-            "mp.cantidad_autorizada as CANTIDAD ,p.cod_prod as [CODIGO ITEM],GETDATE() AS [FECHA MIN ENTREGA],getdate() AS [FECHA MAX ENTREGA],'08:00' AS [MIN VENTANA HORARIA 1],'18:30' AS [MAX VENTANA HORARIA 1],'' AS [MIN VENTANA HORARIA 2],'' AS [MAX VENTANA HORARIA 2],mp.costo AS [COSTO ITEM],cast(0 as decimal(19,4)) AS[CAPACIDAD UNO],cast(0 as decimal(19,4))  AS [CAPACIDAD DOS],'15' AS[SERVICE TIME],'' AS IMPORTANCIA,PRV.COD_PRV AS [IDENTIFICADOR CONTACTO],prv.razon_social AS [NOMBRE CONTACTO],prv.tel1 AS TELEFONO,prv.e_mail AS [EMAIL CONTACTO],e.abreviatura AS [CT ORIGEN],'' AS [REFERENCIA DOMICILIO],prv.calle AS CALLE,'' AS NUMEROPUERTA,prv.colonia AS COLONIA,prv.colonia AS BARRIO,prv.poblacion AS LOCALIDAD,prv.estado AS PARTIDO,prv.pais AS PAIS,prv.cod_prv AS REFDOMICILIOEXTERNO,prv.razon_social AS DOMICILIODESCRIPCION,'0700' AS InicioHorario1,'0000' AS InicioHorario2,'2300' AS FinHorario1,'0000' AS FinHorario2,'15' AS TiempoEspera,prv.cod_postal AS DomCodPostal ,e.cod_estab  AS Contacto,'VP21' AS RefDepositoExterno,'21395' AS CodigoPostalEstab,lp.nombre AS Linea,f.nombre AS Sublinea, 'P' AS Tipo ,'18' as CodigoSucursal from mpedprv mp " +
-            "left join pedprv pr on mp.folio=pr.folio " +
-            "left join proveedores prv on pr.cod_prv=prv.cod_prv " +
-            "left join productos p on mp.cod_prod=p.cod_prod " +
-            "left join lineas_productos lp on lp.linea_producto=p.linea_producto " +
-            "left join familias f on f.familia=p.familia " +
-            "left join establecimientos e on e.cod_estab=pr.cod_estab_estadistica " +
-            "where mp.folio='"+pickup+"'" ;
-           
-            if (tipo.Trim()=="29")
-           sql= "select 'PP-" + folio + "' as[N° Documento] ,mp.fecha as Fecha_DOC,GETDATE() as FechaEntrega,  rtrim(prv.cod_estab) as cod_cte  ,rtrim(prv.razon_social) as razon_social ,prv.telefono1,prv.telefono2,'' as e_mail,mp.peso as Peso_KG ,ISNULL(cast(prv.coordenada_x as decimal (19,8)),0) as LATITUD, ISNULL(cast(prv.coordenada_y as decimal(19,8)),0) as LONGITUD,'' as DIRECCION,rtrim(p.descripcion) as [NOMBRE ITEM], " +
-           "mp.cantidad_autorizada as CANTIDAD ,p.cod_prod as [CODIGO ITEM],GETDATE() AS[FECHA MIN ENTREGA],getdate() AS[FECHA MAX ENTREGA],'08:00' AS[MIN VENTANA HORARIA 1],'18:30' AS[MAX VENTANA HORARIA 1],'' AS[MIN VENTANA HORARIA 2],'' AS[MAX VENTANA HORARIA 2],mp.costo AS[COSTO ITEM], cast(0 as decimal(19, 4)) AS[CAPACIDAD UNO],cast(0 as decimal(19, 4))  AS[CAPACIDAD DOS],'15' AS[SERVICE TIME],'' AS IMPORTANCIA, PRV.cod_estab AS[IDENTIFICADOR CONTACTO], prv.razon_social AS[NOMBRE CONTACTO], prv.telefono1 AS TELEFONO,'' AS[EMAIL CONTACTO],e.abreviatura AS[CT ORIGEN],'' AS[REFERENCIA DOMICILIO],prv.calle AS CALLE,'' AS NUMEROPUERTA, prv.colonia AS COLONIA,prv.colonia AS BARRIO,prv.poblacion AS LOCALIDAD,prv.estado AS PARTIDO,prv.pais AS PAIS,prv.cod_estab AS REFDOMICILIOEXTERNO,prv.razon_social AS DOMICILIODESCRIPCION,'0700' AS InicioHorario1,'0000' AS InicioHorario2,'2300' AS FinHorario1,'0000' AS FinHorario2,'15' AS TiempoEspera, prv.cod_postal AS DomCodPostal ,e.cod_estab AS Contacto,'VP21' AS RefDepositoExterno,'21395' AS CodigoPostalEstab, lp.nombre AS Linea,f.nombre AS Sublinea, 'P' AS Tipo ,'18' as CodigoSucursal  " +
-           "from mpedestab mp " +
-           "left join pedestab pr on mp.folio = pr.folio " +
-           "left join establecimientos prv on pr.cod_estab_alterno = prv.cod_estab "+
-           "left join productos p on mp.cod_prod = p.cod_prod "+
-           "left join lineas_productos lp on lp.linea_producto = p.linea_producto "+
-           "left join familias f on f.familia = p.familia "+
-           "left join establecimientos e on e.cod_estab = pr.cod_estab "+
-                "where mp.folio = '"+pickup+"'";
-
-            DataTable DTPickup = q.Consultar(sql);
-
-
-            dtp.Merge(DTPickup);
-
-
-
-        }
-
-    
-        public DataTable EstabUser(string U,DataTable dt)
-         {
             DataTable du;
-            DataTable dtX=new DataTable();
+            DataTable dtX = new DataTable();
             DataColumn dc = new DataColumn();
             dc.ColumnName = "Nombre";
             dtX.Columns.Add(dc);
@@ -1081,32 +730,30 @@ namespace ActualizadorDoctosUnigis
             dc2.ColumnName = "cod_estab";
             dtX.Columns.Add(dc2);
 
-
-            du = q.Consultar("select eu.cod_estab from establecimientos_usuario eu "+
-                             "left join usuarios u on eu.usuario = u.usuario "+
+            du = q.Consultar("select eu.cod_estab from establecimientos_usuario eu " +
+                             "left join usuarios u on eu.usuario = u.usuario " +
                              " Where u.usuario = '" + U + "' and(u.multi_establecimiento = 1 or u.cod_estab = eu.cod_estab) and acceso = '1' and acceso='1'");
-            foreach(DataRow row in dt.Rows)
+            foreach (DataRow row in dt.Rows)
             {
                 bool f = false;
-                foreach(DataRow row2 in du.Rows)
+                foreach (DataRow row2 in du.Rows)
                 {
-                    if(row.ItemArray[1].ToString()  == row2.ItemArray[0].ToString()){
+                    if (row.ItemArray[1].ToString() == row2.ItemArray[0].ToString())
+                    {
                         f = true;
                     }
                 }
                 if (f)
                 {
-                    dtX.Rows.Add(row[0].ToString(),row[1].ToString());
+                    dtX.Rows.Add(row[0].ToString(), row[1].ToString());
                 }
             }
-
-
 
             return dtX;
         }
 
         private void button2_Click(object sender, EventArgs e)
-        { 
+        {
             foreach (DataGridViewRow row in dataGridView1.Rows)
             {
                 bool bChecked = Convert.ToBoolean(row.Cells[0].Value);
@@ -1116,31 +763,7 @@ namespace ActualizadorDoctosUnigis
                 }
                 else
                     row.Cells[0].Value = true;
-
             }
-        }
-
-        private void button3_Click(object sender, EventArgs e)
-        {
-            DataTable dt = new DataTable();
-            dt = q.Consultar("select cod_estab from Eyp_Servidores where servidro_A is not null and bbdd is not null", "10");
-            DataTable DTKILOS = new DataTable();
-
-            foreach (DataRow row in dt.Rows)
-            {
-                string sql = "select e.abreviatura, CONVERT(VARCHAR(50), CAST(sum(cantidad * peso_total) AS MONEY), 1) as KILOS ,sum(cantidad * peso_total) as Kilos2 " +
-                      "from[dbo].[F1534_Embarques_Planner]('"+row.ItemArray[0].ToString()+"') " +
-                      "emb inner join establecimientos e on e.cod_estab = emb.cod_estab group by e.abreviatura ";
-
-
-                if (DTKILOS.Rows.Count > 0)
-                {
-                    DTKILOS.Merge(q.Consultar(sql, row.ItemArray[0].ToString()));
-                }
-                else
-                { DTKILOS = q.Consultar(sql, row.ItemArray[0].ToString()); }
-            }
-
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
@@ -1149,175 +772,44 @@ namespace ActualizadorDoctosUnigis
             Microsoft.VisualBasic.Interaction.SaveSetting("Unigis-EYP", "Formularios", "LeftF1", this.Left.ToString());
             Microsoft.VisualBasic.Interaction.SaveSetting("Unigis-EYP", "Formularios", "WidthF1", this.Width.ToString());
             Microsoft.VisualBasic.Interaction.SaveSetting("Unigis-EYP", "Formularios", "HeightF1", this.Height.ToString());
-
-
-        }
-        public void ExportarDataGridViewExcel(DataGridView grd)
-        {
-            try
-            {
-                SaveFileDialog archivo = new SaveFileDialog();
-                archivo.Filter = "Excel (*.xls)|*.xls";
-                archivo.FileName = "Registro de produccion " + DateTime.Now.Date.ToShortDateString().Replace('/', '-');
-                if (archivo.ShowDialog() == DialogResult.OK)
-                {
-                    Microsoft.Office.Interop.Excel.Application aplicacion;
-                    Microsoft.Office.Interop.Excel.Workbook libroDeTrabajo;
-                    Microsoft.Office.Interop.Excel.Worksheet hojaDeTrabajo;
-                    aplicacion = new Microsoft.Office.Interop.Excel.Application();
-                    libroDeTrabajo = aplicacion.Workbooks.Add();
-                    hojaDeTrabajo = (Microsoft.Office.Interop.Excel.Worksheet)libroDeTrabajo.Worksheets.get_Item(1);
-
-                    hojaDeTrabajo.Cells[1, "A"] = grd.Columns[0].HeaderText;
-                    hojaDeTrabajo.Cells[1, "B"] = grd.Columns[1].HeaderText;
-                    hojaDeTrabajo.Cells[1, "C"] = grd.Columns[2].HeaderText;
-                    hojaDeTrabajo.Cells[1, "D"] = grd.Columns[3].HeaderText;
-                    hojaDeTrabajo.Cells[1, "E"] = grd.Columns[4].HeaderText;
-                    hojaDeTrabajo.Cells[1, "F"] = grd.Columns[5].HeaderText;
-                    hojaDeTrabajo.Cells[1, "G"] = grd.Columns[6].HeaderText;
-                    hojaDeTrabajo.Cells[1, "H"] = grd.Columns[7].HeaderText;
-                    hojaDeTrabajo.Cells[1, "I"] = grd.Columns[8].HeaderText;
-                    hojaDeTrabajo.Cells[1, "J"] = grd.Columns[9].HeaderText;
-                    hojaDeTrabajo.Cells[1, "K"] = grd.Columns[10].HeaderText;
-                    hojaDeTrabajo.Cells[1, "l"] = grd.Columns[11].HeaderText;
-                    hojaDeTrabajo.Cells[1, "M"] = grd.Columns[12].HeaderText;
-                    hojaDeTrabajo.Cells[1, "M"] = grd.Columns[13].HeaderText;
-                    hojaDeTrabajo.Cells[1, "M"] = grd.Columns[14].HeaderText;
-
-                    hojaDeTrabajo.Columns[1].AutoFit();
-                    hojaDeTrabajo.Columns[2].AutoFit();
-                    hojaDeTrabajo.Columns[3].AutoFit();
-                    hojaDeTrabajo.Columns[4].AutoFit();
-                    hojaDeTrabajo.Columns[5].AutoFit();
-                    hojaDeTrabajo.Columns[6].AutoFit();
-                    hojaDeTrabajo.Columns[7].AutoFit();
-                    hojaDeTrabajo.Columns[8].AutoFit();
-                    hojaDeTrabajo.Columns[9].AutoFit();
-                    hojaDeTrabajo.Columns[10].AutoFit();
-                    hojaDeTrabajo.Columns[11].AutoFit();
-                    hojaDeTrabajo.Columns[12].AutoFit();
-                    hojaDeTrabajo.Columns[13].AutoFit();
-                    hojaDeTrabajo.Columns[14].AutoFit();
-                    hojaDeTrabajo.Name = "Exportacion";
-                    //Recorremos el DataGridView rellenando la hoja de trabajo
-                    for (int i = 0; i < grd.Rows.Count - 1; i++)
-                    {
-                        for (int j = 0; j < grd.Columns.Count; j++)
-                        {
-                            if (grd.Rows[i].Cells[j].Value != null)
-                            {
-                                hojaDeTrabajo.Cells[i + 2, j + 1] = grd.Rows[i].Cells[j].Value.ToString();
-                            }
-                        }
-                    }
-                    libroDeTrabajo.SaveAs(archivo.FileName,
-                        Microsoft.Office.Interop.Excel.XlFileFormat.xlWorkbookNormal);
-                    libroDeTrabajo.Close(true);
-                    aplicacion.Quit();
-                    MessageBox.Show("Registro de produccion Exportado a Excel", "AMMNSA");
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error al exportar la informacion debido a: " + ex.ToString());
-            }
         }
 
-            private void button1_Click_5(object sender, EventArgs e)
+        private void button1_Click_5(object sender, EventArgs e)
         {
-
-            //ExportarDataGridViewExcel(dataGridView1);
             string ruta2 = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
 
             using (SaveFileDialog sfd = new SaveFileDialog() { Filter = "Excel Workbook|*.xlsx" })
             {
-        
                 try
+                {
+                    using (XLWorkbook workbook = new XLWorkbook())
                     {
-                        using (XLWorkbook workbook = new XLWorkbook())
-                        {
-                            workbook.Worksheets.Add(this.dt.Copy(), "Documentos" + user +"-"+ Estab.Substring(0, 5));
-                           workbook.SaveAs("Documentos" + user + "-" + Estab.Substring(0, 5) + ".xlsx");
-                         Process.Start(new ProcessStartInfo("Documentos" + user + "-" + Estab.Substring(0, 5) + ".xlsx") { UseShellExecute = true });
-                    
+                        workbook.Worksheets.Add(this.dt.Copy(), "Documentos" + user + "-" + Estab.Substring(0, 5));
+                        workbook.SaveAs("Documentos" + user + "-" + Estab.Substring(0, 5) + ".xlsx");
+                        Process.Start(new ProcessStartInfo("Documentos" + user + "-" + Estab.Substring(0, 5) + ".xlsx") { UseShellExecute = true });
                     }
-                        this.TopMost = false;
-                        MessageBox.Show("Archivo Exportado con exito", "Message", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        this.TopMost = true;
-                    }
-                    catch (Exception ex)
-                    {
-                        this.TopMost = false;
-                        MessageBox.Show(ex.Message, "Message", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        this.TopMost = true;
-                    }
+                    this.TopMost = false;
+                    MessageBox.Show("Archivo Exportado con exito", "Message", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    this.TopMost = true;
                 }
-            
-        }
-        private void generarExcel(DataGridView dgv)
-        {
-          
-            xmlwriterOrden excel = new xmlwriterOrden();
-         //   excel.ExportarExcel(dgv);
-
-            
-        }
-
-        private void label2_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void trackBar1_ValueChanged(object sender, EventArgs e)
-        {
-          
-              {
-
-              
-               }
-
-        }
-
-       
-
-       
-
-        private void trackBar1_ValueChanged_1(object sender, EventArgs e)
-        {
-
-           
-        }
-
-        private void button3_Click_1(object sender, EventArgs e)
-        {
-           
-            
-
-
-        }
-
-       
-
-        private void trackBar1_Scroll(object sender, EventArgs e)
-        {
-            
-           
+                catch (Exception ex)
+                {
+                    this.TopMost = false;
+                    MessageBox.Show(ex.Message, "Message", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    this.TopMost = true;
+                }
+            }
         }
 
         private void comboBox2_SelectedIndexChanged(object sender, EventArgs e)
         {
-                
-                  int size = int.Parse(cmb_letra.Text);
+            int size = int.Parse(cmb_letra.Text);
 
-
-                 // SetMinMax(dataGridView1, textBox1.Text);
-
-                  dataGridView1.Font = new Font(dataGridView1.Font.Name, size, dataGridView1.Font.Style);
-                  dataGridView1.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
-                   DataGridViewColumn col = new DataGridViewColumn();
-                    col.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
+            dataGridView1.Font = new Font(dataGridView1.Font.Name, size, dataGridView1.Font.Style);
+            dataGridView1.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
+            DataGridViewColumn col = new DataGridViewColumn();
+            col.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
         }
-
 
         private void Validar_folio(DataTable auxF, string cod_estab)
         {
@@ -1329,15 +821,12 @@ namespace ActualizadorDoctosUnigis
             string cantidad;
             string transaccion;
 
-            // DataTable aux = new DataTable();
             for (int i = auxF.Rows.Count - 1; i >= 0; i--)
             {
-
                 Folio = auxF.Rows[i]["N° Documento"].ToString().Substring(auxF.Rows[i]["N° Documento"].ToString().IndexOf('-') + 1);
                 cod_prod_F = auxF.Rows[i]["CODIGO ITEM"].ToString();
                 Folio_m = auxF.Rows[i]["N° Documento"].ToString();
                 transaccion = auxF.Rows[i]["N° Documento"].ToString().Substring(0, auxF.Rows[i]["N° Documento"].ToString().IndexOf('-'));
-                // cantidad = Convert.ToInt32(dtLocalC.Rows[i]["cantidad"]);
                 switch (transaccion)
                 {
                     case ("FC"): transaccion = "36"; break;
@@ -1352,25 +841,10 @@ namespace ActualizadorDoctosUnigis
                 {
                     MessageBox.Show("Documento : " + DTFolio.Rows[0]["folio"] + DTFolio.Rows[0]["cod_prod"] + DTFolio.Rows[0]["cantidad"]);
 
-
-
-
                     auxF.Rows[i].Delete();
-
-
                 }
-
-
-
             }
-
-
-
-
-
         }
-
-
     }
 }
 

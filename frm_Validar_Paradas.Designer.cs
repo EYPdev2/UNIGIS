@@ -51,9 +51,7 @@ namespace ActualizadorDoctosUnigis
             this.txt_viajeV.Name = "txt_viajeV";
             this.txt_viajeV.Size = new System.Drawing.Size(100, 20);
             this.txt_viajeV.TabIndex = 1;
-            this.txt_viajeV.TextChanged += new System.EventHandler(this.txt_viajeV_TextChanged);
             this.txt_viajeV.KeyDown += new System.Windows.Forms.KeyEventHandler(this.textBox1_KeyDown);
-            this.txt_viajeV.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBox1_KeyPress);
             // 
             // dataGridView1
             // 
@@ -65,7 +63,6 @@ namespace ActualizadorDoctosUnigis
             this.dataGridView1.ReadOnly = true;
             this.dataGridView1.Size = new System.Drawing.Size(775, 389);
             this.dataGridView1.TabIndex = 2;
-            this.dataGridView1.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView1_CellClick);
             this.dataGridView1.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView1_CellContentClick);
             // 
             // frm_Validar_Paradas

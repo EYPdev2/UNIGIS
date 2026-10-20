@@ -199,14 +199,14 @@ namespace ActualizadorDoctosUnigis
         private void button1_Click(object sender, EventArgs e)
         {
             xmlwriterParada xmlwriterParada = new xmlwriterParada();
-            this.ObtenerParadas(this.txt_viaje.Text);
-            if (this.dataGridView1.Rows.Count == 0)
+            ObtenerParadas(this.txt_viaje.Text);
+            if (dataGridView1.Rows.Count == 0)
             {
                 int num = (int)MessageBox.Show("No Existe Nada que Actualizar");
             }
             else
             {
-                foreach (ConsultarParadaPorIdResponse paradaPorIdResponse in this.Lcpr)
+                foreach (ConsultarParadaPorIdResponse paradaPorIdResponse in Lcpr)
                 {
                     string content1 = xmlwriterParada.stringtoxml("1234", paradaPorIdResponse.d.RefDocumento, paradaPorIdResponse.d.EstadoParada, Convert.ToString(paradaPorIdResponse.d.IdViaje), "true");
                     using (HttpClient httpClient = new HttpClient())
@@ -216,32 +216,17 @@ namespace ActualizadorDoctosUnigis
                         Uri requestUri = new Uri("https://grupo-eyp.unigis.com/mapi/soap/logistic/service.asmx?op=ModificarEstadoParada");
                         StringContent content2 = new StringContent(content1, Encoding.UTF8, "text/xml");
                         string result = httpClient.PostAsync(requestUri, (HttpContent)content2).Result.Content.ReadAsStringAsync().Result;
-                        this.cod_estab = this.ov.d.DepositoSalida.RefDepositoExterno.ToString();
+                        cod_estab = ov.d.DepositoSalida.RefDepositoExterno.ToString();
                     }
                 }
 
-                this.dtg = this.dataGridView1.DataSource as DataTable;
-                this.EmbarqueC();
-                this.dtg.Clear();
-                this.txt_viaje.Enabled = true;
-                this.btn_canc.Enabled = false;
-                this.dataGridView1.Refresh();
+                dtg = dataGridView1.DataSource as DataTable;
+                EmbarqueC();
+                dtg.Clear();
+                txt_viaje.Enabled = true;
+                btn_canc.Enabled = false;
+                dataGridView1.Refresh();
             }
-
-            dtg = dataGridView1.DataSource as DataTable;
-            //Embarque(dtg
-            // q.ActualizarViaje(txt_viaje.Text,usuario);
-
-            EmbarqueC();
-            dtg.Clear();
-            txt_viaje.Enabled = true;
-            btn_canc.Enabled = false;
-            dataGridView1.Refresh();
-
-
-
-
-
         }
 
         //Metodo que realiza una consulta a la web api de unigis para consultar  inoformacion del viaje por medio de el id de viaje
@@ -286,36 +271,19 @@ namespace ActualizadorDoctosUnigis
 
         public void EmbarqueC()
         {
-            
-            
-             string FolioEmb = e.Insertar_embarque(obtener_estab(cod_estab), ov,usuario, txt_viaje.Text);
+            string FolioEmb = e.Insertar_embarque(obtener_estab(cod_estab), ov,usuario, txt_viaje.Text);
             Embarque(dtg, FolioEmb);
-            
-
-                
         }
 
-        public void Embarque (DataTable dgv, string FolioE)
+        public void Embarque(DataTable dgv, string FolioE)
         {
-
-
-               
             foreach (DataRow row in dgv.Rows)
             {
+                if (row["Estatus"].ToString().Trim() != "Validado")
+                    continue;
+
                 Entrega ent = new Entrega(row, ov.d.Conductor.ReferenciaExterna, ov.d.Vehiculo.Dominio);
-                e.Insertar_embarque_detalle(ent, obtener_estab (cod_estab), FolioE); //Revisar Tiempo de Ejecucion 
-
-
-                //if (Convert.ToDouble(row["Cantidad_Entregada"].ToString()) > 0 && Convert.ToDouble(row["Cantidad_Entregada"].ToString())== Convert.ToDouble(row["Cantidad"].ToString()))
-                //{
-                //    //MessageBox.Show("Entregado"); 
-                    
-                //}
-                //else if (Convert.ToDouble(row["Cantidad_Entregada"].ToString()) > 0 && Convert.ToDouble(row["cantidad"].ToString()) > 0)
-                //{ MessageBox.Show("Entrega P");}
-                
-                //else {// MessageBox.Show("No Entregado ");
-                //      }
+                e.Insertar_embarque_detalle(ent, obtener_estab (cod_estab), FolioE);
             }
         }
 

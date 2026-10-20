@@ -46,51 +46,16 @@ namespace ActualizadorDoctosUnigis
             }
         }
 
-        private void button1_Click(object sender, EventArgs e)
-        {
-            dataGridView1.Columns.Clear();
-            dataGridView1.DataSource = q.consultarviaje(Convert.ToInt32(txt_viajeV.Text));
-
-            button.Name = "Validar";
-            button.HeaderText = "Validar";
-            button.Text = "Validar";
-            button.UseColumnTextForButtonValue = true;
-
-            button2.Name = "Detalles";
-            button2.HeaderText = "Detalles";
-            button2.Text = "Detalles";
-            button2.UseColumnTextForButtonValue = true;
-            button2.Width = 50;
-            this.dataGridView1.Columns.Add(button);
-            this.dataGridView1.Columns.Add(button2);
-            z = q.Deposito_viaje(txt_viajeV.Text);
-            colorear(dataGridView1);
-        }
-
-        private void button_Click(object sender, EventArgs e)
-        {
-            MessageBox.Show("si funciona");
-
-        }
-
-        private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
-        {
-
-        }
-
         private async void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
             var senderGrid = (DataGridView)sender;
 
-            if (senderGrid.Columns[e.ColumnIndex] is DataGridViewButtonColumn &&
-                e.RowIndex >= 0)
+            if (senderGrid.Columns[e.ColumnIndex] is DataGridViewButtonColumn && e.RowIndex >= 0)
             {
                 if (senderGrid.Columns[e.ColumnIndex].Name == "Validar")
                 {
                     try
                     {
-                        //if (dataGridView1.CurrentRow.Cells[3].Value.ToString() == "Validado")
-                        //    return;
                         Estructura_ParadaJS.Rootobject EJS = new Estructura_ParadaJS.Rootobject();
                         PARADA_JSON PJ = new PARADA_JSON
                         {
@@ -100,16 +65,12 @@ namespace ActualizadorDoctosUnigis
 
                         try
                         {
-
                             string jsonString = JsonConvert.SerializeObject(PJ);
-                            //  MessageBox.Show(dataGridView1.CurrentRow.Cells[1].Value.ToString());
-                            System.Net.ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
+                            ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
                             var endpoint = new Uri("https://grupo-eyp.unigis.com/mapi/soap/logistic/service.asmx/ConsultarParadaPorId");
-                            //var result = client.GetAsync(endpoint).Result;
-                            //var xmlR = result.Content.ReadAsStringAsync().Result;
                             var paylod = new StringContent(jsonString, Encoding.UTF8, "application/json");
-                            var result = await client.PostAsync(endpoint, paylod);
-                            var content = await result.Content.ReadAsStringAsync();
+                            var response = await client.PostAsync(endpoint, paylod);
+                            var content = await response.Content.ReadAsStringAsync();
                             EJS = JsonConvert.DeserializeObject<Estructura_ParadaJS.Rootobject>(content);
                         }
                         catch (Exception ex)
@@ -139,10 +100,7 @@ namespace ActualizadorDoctosUnigis
                         try
                         {
                             string SXML = xml.stringtoxmlM(EJS, Convert.ToDouble(dtC.Rows[0].ItemArray[0].ToString()), Convert.ToDouble(dtC.Rows[0].ItemArray[1].ToString()), dataGridView1.CurrentRow.Cells[1].Value.ToString());
-
                             var endpoint2 = new Uri("https://grupo-eyp.unigis.com/mapi/soap/logistic/service.asmx?op=ModificarEstadoParada");
-                            //var result = client.GetAsync(endpoint).Result;
-                            //var xmlR = result.Content.ReadAsStringAsync().Result;
                             var paylod2 = new StringContent(SXML, Encoding.UTF8, "text/xml");
                             var result2 = await client.PostAsync(endpoint2, paylod2);
                             status = result2.StatusCode.ToString();
@@ -153,60 +111,47 @@ namespace ActualizadorDoctosUnigis
                             return;
                         }
 
-                        if (status == "OK")
-                        {
-                            MessageBox.Show("Actualización Correcta");
-                            dataGridView1.Columns.Clear();
-
-                            DataTable result;
-                            try
-                            {
-                                result = q.consultarviaje(Convert.ToInt32(txt_viajeV.Text));
-                                dataGridView1.DataSource = result;
-                            }
-                            catch (Exception ex)
-                            {
-                                MessageBox.Show($"No fue posible refrescar la información del viaje en pantalla.\n\nMensaje de error: {ex.Message}", "Atención");
-                                return;
-                            }
-
-                            button.Name = "Validar";
-                            button.HeaderText = "Validar";
-                            button.Text = "Validar";
-                            button.UseColumnTextForButtonValue = true;
-
-                            button2.Name = "Detalles";
-                            button2.HeaderText = "Detalles";
-                            button2.Text = "Detalles";
-                            button2.UseColumnTextForButtonValue = true;
-                            button2.Width = 50;
-                            this.dataGridView1.Columns.Add(button);
-                            this.dataGridView1.Columns.Add(button2);
-
-                            try
-                            {
-                                z = q.Deposito_viaje(txt_viajeV.Text);
-                                colorear(dataGridView1);
-                            }
-                            catch (Exception ex)
-                            {
-                                MessageBox.Show($"No fue posible consultar el deposito del viaje en UNIGIS.\n\nMensaje de error: {ex.Message}", "Atención");
-                                dataGridView1.Columns.Clear();
-                                txt_viajeV.Clear();
-                                return;
-                            }
-                        }
-                        else
+                        if (status != "OK")
                         {
                             MessageBox.Show($"Un error inesperado de UNIGIS no permitió modificar el estado de la parada {PJ.IdParada}.", "Atención");
                             return;
                         }
+
+                        MessageBox.Show("Actualización Correcta");
+                        dataGridView1.Columns.Clear();
+
+                        DataTable result;
+                        try
+                        {
+                            result = q.consultarviaje(Convert.ToInt32(txt_viajeV.Text));
+                            dataGridView1.DataSource = result;
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show($"No fue posible refrescar la información del viaje en pantalla.\n\nMensaje de error: {ex.Message}", "Atención");
+                            return;
+                        }
+
+                        button.Name = "Validar";
+                        button.HeaderText = "Validar";
+                        button.Text = "Validar";
+                        button.UseColumnTextForButtonValue = true;
+
+                        button2.Name = "Detalles";
+                        button2.HeaderText = "Detalles";
+                        button2.Text = "Detalles";
+                        button2.UseColumnTextForButtonValue = true;
+                        button2.Width = 50;
+                        dataGridView1.Columns.Add(button);
+                        dataGridView1.Columns.Add(button2);
+                        colorear(dataGridView1);
                     }
                     catch (Exception ex)
                     {
                         MessageBox.Show($"Ocurrio un error inesperado al intentar validar la parada.\n\nMensaje de error: {ex.Message}", "Atención");
                     }
                 }
+
                 if (senderGrid.Columns[e.ColumnIndex].Name == "Detalles")
                 {
 
@@ -252,26 +197,20 @@ namespace ActualizadorDoctosUnigis
                 }
                 if (row.Cells[3].Value.ToString() == "Validado")
                 {
-
                     row.Cells[3].Style.BackColor = Color.Peru;
                     row.Cells[3].Style.ForeColor = Color.White;
                 }
                 if (row.Cells[3].Value.ToString() == "Entregado")
                 {
-
                     row.Cells[3].Style.BackColor = Color.Green;
                     row.Cells[3].Style.ForeColor = Color.White;
                 }
                 if (row.Cells[3].Value.ToString() == "Entrega Parcial")
                 {
-
                     row.Cells[3].Style.BackColor = Color.Green;
                     row.Cells[3].Style.ForeColor = Color.White;
                 }
-
-
             }
-
         }
 
         private DataTable ItemstoDT(Estructura_ParadaJS.Rootobject EJS, string estado)
@@ -356,77 +295,99 @@ namespace ActualizadorDoctosUnigis
             return dt;
         }
 
-        private void textBox1_KeyPress(object sender, KeyPressEventArgs e)
-        {
-
-        }
-
-        private void textBox1_KeyDown(object sender, KeyEventArgs e)
+        private async void textBox1_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode.ToString() == "F2")
             {
                 GridBusqueda gb = new GridBusqueda(txt_viajeV, usuario);
                 gb.Show();
-
             }
-            if (e.KeyCode == Keys.Enter)
+
+            if (e.KeyCode != Keys.Enter)
             {
-                if (txt_viajeV.Text != "")
-                {
-                    ////if (!lib.validaEstab(usuario, q.Deposito_viaje(txt_viaje.Text)))
-                    ////{
-                    ////    MessageBox.Show("Solo se pueben Liberer Viajes de establecimientos asignados al Usuario", "Establecimiento", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    ////    return;
-                    ////}
-                    ///
-
-                    DataTable auth = q.Consultar("select Deposito_Ref from EYP_Unis_parada where IdViaje = '"+txt_viajeV.Text+"' and tipoobjeto = 'Viaje' and Estado = 'Inactivo'");
-                    if (auth.Rows.Count == 0)
-                    {
-                        MessageBox.Show($"El viaje {txt_viajeV.Text} no existe en UNIGIS. Verifique que el número de viaje sea correcto.", "ATENCIÓN");
-                        return;
-                    }
-
-                    if (!EstabUser(usuario, auth.Rows[0].ItemArray[0].ToString()))
-                    {
-                        MessageBox.Show("El usuario no tiene Permiso para realizar movimientos en el Deposito :" + auth.Rows[0].ItemArray[0].ToString(), "ALERTA", MessageBoxButtons.OK);
-                        txt_viajeV.Text = "";
-                        return;
-                    }
-
-                    dataGridView1.Columns.Clear();
-                    dataGridView1.DataSource = q.consultarviaje(Convert.ToInt32(txt_viajeV.Text));
-
-                    button.Name = "Validar";
-                    button.HeaderText = "Validar";
-                    button.Text = "Validar";
-                    button.UseColumnTextForButtonValue = true;
-
-                    button2.Name = "Detalles";
-                    button2.HeaderText = "Detalles";
-                    button2.Text = "Detalles";
-                    button2.UseColumnTextForButtonValue = true;
-                    button2.Width = 50;
-                    this.dataGridView1.Columns.Add(button);
-                    this.dataGridView1.Columns.Add(button2);
-                    z = q.Deposito_viaje(txt_viajeV.Text);
-                    colorear(dataGridView1);
-                }
-                else
-                {
-                    MessageBox.Show("Favor de Proporcionar el IDVIAJE");
-                }
-
-                // MessageBox.Show(soapBody.ToString());
-
-
-                //orcr = JsonConvert.DeserializeObject<ObtenerRutaCompleta_Response.ObtenerRutaCompletaResponse>(result);
-
-
+                return;
             }
-            
+
+            var viaje = txt_viajeV.Text.Trim();
+            dataGridView1.Columns.Clear();
+            z = "";
+
+            if (string.IsNullOrWhiteSpace(txt_viajeV.Text))
+            {
+                MessageBox.Show("Favor de Proporcionar el IDVIAJE");
+                return;
+            }
+
+            DataTable auth;
+            try
+            {
+                auth = q.Consultar($"SELECT TOP 1 Deposito_Ref FROM EYP_Unis_parada WHERE IdViaje = '{viaje}' AND TipoObjeto = 'Viaje' AND Estado IN ('Inactivo', 'Inicio de carga', 'Fin de carga', 'Activo') AND Deposito_Ref IS NOT NULL");
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("No fue posible buscar el viaje. Intente de nuevo.", "ATENCIÓN");
+                return;
+            }
+
+            if (auth.Rows.Count == 0)
+            {
+                MessageBox.Show($"El viaje {viaje} no existe en el sistema. Verifique que el número de viaje este correcto e intente de nuevo.", "ATENCIÓN");
+                return;
+            }
+
+            var deposito = auth.Rows[0].ItemArray[0].ToString().Trim();
+            if (string.IsNullOrEmpty(deposito))
+            {
+                MessageBox.Show($"El viaje {viaje} no tiene un deposito asociado.", "ATENCIÓN");
+                return;
+            }
+
+            bool tienePermiso;
+            try
+            {
+                tienePermiso = EstabUser(usuario, deposito);
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Ocurrio un error inesperado al consultar la información del viaje. Intentelo de nuevo.");
+                return;
+            }
+
+            if (!tienePermiso)
+            {
+                MessageBox.Show($"El usuario no tiene permiso para realizar movimientos en el deposito {deposito}", "ALERTA");
+                txt_viajeV.Text = "";
+                return;
+            }
+
+            try
+            {
+                dataGridView1.DataSource = q.consultarviaje(Convert.ToInt32(viaje));
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Ocurrio un error inesperado al consultar las paradas del viaje. Intentelo de nuevo.");
+                return;
+            }
+
+            z = deposito;
+
+            button.Name = "Validar";
+            button.HeaderText = "Validar";
+            button.Text = "Validar";
+            button.UseColumnTextForButtonValue = true;
+
+            button2.Name = "Detalles";
+            button2.HeaderText = "Detalles";
+            button2.Text = "Detalles";
+            button2.UseColumnTextForButtonValue = true;
+            button2.Width = 50;
+            dataGridView1.Columns.Add(button);
+            dataGridView1.Columns.Add(button2);
+            colorear(dataGridView1);
         }
-        public bool EstabUser(string U, string deposito)
+
+        private bool EstabUser(string U, string deposito)
         {
             DataTable du;
             DataTable dtX = new DataTable();
@@ -451,19 +412,12 @@ namespace ActualizadorDoctosUnigis
             return f;
         }
 
-        private void txt_viajeV_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
         private void frm_Validar_Paradas_FormClosing(object sender, FormClosingEventArgs e)
         {
             Microsoft.VisualBasic.Interaction.SaveSetting("Unigis-EYP", "Formularios", "TOPF4", this.Top.ToString());
             Microsoft.VisualBasic.Interaction.SaveSetting("Unigis-EYP", "Formularios", "LeftF4", this.Left.ToString());
             Microsoft.VisualBasic.Interaction.SaveSetting("Unigis-EYP", "Formularios", "WidthF4", this.Width.ToString());
             Microsoft.VisualBasic.Interaction.SaveSetting("Unigis-EYP", "Formularios", "HeightF4", this.Height.ToString());
-
-
         }
     }
 }

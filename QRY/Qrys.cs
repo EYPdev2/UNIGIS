@@ -1,4 +1,5 @@
-﻿using ActualizadorDoctosUnigis.Models;
+﻿using ActualizadorDoctosUnigis.Exceptions;
+using ActualizadorDoctosUnigis.Models;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -6,6 +7,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Net.Http;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace ActualizadorDoctosUnigis
 {
@@ -261,26 +263,34 @@ namespace ActualizadorDoctosUnigis
 
         }
 
-        public DataTable SelecDocumentos(string establecimiento, string cod_estab)
+        public DataTable SelecDocumentos(string cod_estab)
         {
-            DataTable dataTable = new DataTable();
-            StringBuilder qry = new StringBuilder();
-            qry.Append("select CONCAT(RTRIM(T.abreviatura),'-' ,PPE.folio)AS Documento,PPE.folio,PPE.transaccion  , COALESCE(F.cod_estab,MI.cod_estab,'') AS Estab ,E.nombre,PPE.unidad, P.cod_prod, PPE.cantidad, P.descripcion, PPE.Status from productos_por_embarcar ppe ");
-            qry.Append("left join facremtick f on f.folio = ppe.folio  and f.transaccion = ppe.transaccion ");
-            qry.Append("LEFT JOIN movimientos_internos MI ON MI.folio = PPE.folio AND MI.transaccion = PPE.transaccion ");
-            qry.Append("left join transacciones t on t.transaccion = PPE.transaccion ");
-            qry.Append("LEFT JOIN establecimientos E ON E.cod_estab = COALESCE(F.cod_estab, MI.cod_estab, '') ");
-            qry.Append("LEFT JOIN PRODUCTOS P ON P.cod_prod = PPE.cod_prod where ppe.Status = '1' and E.cod_estab = '" + cod_estab + "'");
+            var qry = $@"
+                SELECT
+                    CONCAT(RTRIM(T.abreviatura), '-', PPE.folio) AS Documento,
+                    PPE.folio,
+                    PPE.transaccion,
+                    COALESCE(F.cod_estab, MI.cod_estab, PE.cod_estab, '') AS Estab,
+                    E.nombre,
+                    PPE.unidad,
+                    P.cod_prod,
+                    PPE.cantidad,
+                    P.descripcion,
+                    PPE.Status
+                FROM productos_por_embarcar PPE
+                LEFT JOIN facremtick F ON F.folio = PPE.folio AND F.transaccion = PPE.transaccion
+                LEFT JOIN movimientos_internos MI ON MI.folio = PPE.folio AND MI.transaccion = PPE.transaccion
+                LEFT JOIN pedestab PE ON PE.folio = PPE.folio AND PE.transaccion = PPE.transaccion
+                LEFT JOIN transacciones T ON T.transaccion = PPE.transaccion
+                LEFT JOIN establecimientos E ON E.cod_estab = COALESCE(F.cod_estab, MI.cod_estab, PE.cod_estab, '')
+                LEFT JOIN productos P ON P.cod_prod = PPE.cod_prod
+                WHERE PPE.Status = '1' AND E.cod_estab = '{cod_estab}';
+            ";
 
-            dataTable = Consultar(qry.ToString(), cod_estab);
-
-
-
-
-
-            return dataTable;
-
+            DataTable resultados = Consultar(qry.ToString(), cod_estab);
+            return resultados;
         }
+
         public DataTable Cod_estab (string establecimiento)
         {
             DataTable dtaux = new DataTable();
@@ -609,25 +619,49 @@ namespace ActualizadorDoctosUnigis
         }
 
 
-        public void Historico_envio(string N_Documento, string Transaccion, string Producto, string fecha_doc, string cantidad, string fecha_envio, string deposito, string usuario, string latitud, string longitud, string fecha_entrega)
+        //public void Historico_envio(string N_Documento, string Transaccion, string Producto, string fecha_doc, string cantidad, string fecha_envio, string deposito, string usuario, string latitud, string longitud, string fecha_entrega)
+        //{
+        //    using (SqlConnection openCon = new SqlConnection("Data Source = 192.168.8.4,9001 ; Initial Catalog = BMS; User ID = sa; Password = @Sistemas74"))
+        //    {
+        //        string saveStaff = "Insert into EYP_unigis_Doctos_Historico values ('" + N_Documento + "' ,'" + Transaccion + "','" + Producto + "','" + fecha_doc + "','" + cantidad + "','" + fecha_envio + "','" + deposito + "','" + usuario + "','" + latitud + "','" + longitud + "','" + fecha_entrega + "')";
+
+        //        using (SqlCommand querySaveStaff = new SqlCommand(saveStaff))
+        //        {
+        //            querySaveStaff.Connection = openCon;
+
+        //            openCon.Open();
+
+        //            querySaveStaff.ExecuteNonQuery();
+
+
+        //        }
+
+        //    }
+        //}
+        public void HistoricoEnvio(string documento, string producto, string cantidad, string deposito, string usuario, string fechaEntrega, string latitud, string longitud)
         {
-            using (SqlConnection openCon = new SqlConnection("Data Source = 192.168.8.4,9001 ; Initial Catalog = BMS; User ID = sa; Password = @Sistemas74"))
+            using (SqlConnection conn = new SqlConnection("Data Source=192.168.8.4,9001;Initial Catalog=BMS;User ID=sa;Password=@Sistemas74"))
             {
-                string saveStaff = "Insert into EYP_unigis_Doctos_Historico values ('" + N_Documento + "' ,'" + Transaccion + "','" + Producto + "','" + fecha_doc + "','" + cantidad + "','" + fecha_envio + "','" + deposito + "','" + usuario + "','" + latitud + "','" + longitud + "','" + fecha_entrega + "')";
-
-                using (SqlCommand querySaveStaff = new SqlCommand(saveStaff))
+                conn.Open();
+                using (SqlCommand cmd = new SqlCommand(
+                    "INSERT INTO EYP_UNIGIS_envio_documentos_historico " +
+                    "(fecha, documento, producto, cantidad, deposito, usuario, fecha_entrega, latitud, longitud) " +
+                    "VALUES (GETDATE(), @Documento, @Producto, @Cantidad, @Deposito, @Usuario, @FechaEntrega, @Latitud, @Longitud)",
+                    conn))
                 {
-                    querySaveStaff.Connection = openCon;
-
-                    openCon.Open();
-
-                    querySaveStaff.ExecuteNonQuery();
-
-
+                    cmd.Parameters.Add("@Documento",    SqlDbType.VarChar, 30).Value  = documento;
+                    cmd.Parameters.Add("@Producto",     SqlDbType.VarChar, 10).Value  = producto;
+                    cmd.Parameters.Add("@Cantidad",     SqlDbType.Money).Value         = Convert.ToDecimal(cantidad);
+                    cmd.Parameters.Add("@Deposito",     SqlDbType.VarChar,  5).Value  = deposito;
+                    cmd.Parameters.Add("@Usuario",      SqlDbType.VarChar,  5).Value  = usuario;
+                    cmd.Parameters.Add("@FechaEntrega", SqlDbType.DateTime).Value      = DateTime.Parse(fechaEntrega, System.Globalization.CultureInfo.CurrentCulture, System.Globalization.DateTimeStyles.AssumeLocal);
+                    cmd.Parameters.Add("@Latitud",      SqlDbType.Decimal).Value       = Convert.ToDecimal(latitud);
+                    cmd.Parameters.Add("@Longitud",     SqlDbType.Decimal).Value       = Convert.ToDecimal(longitud);
+                    cmd.ExecuteNonQuery();
                 }
-
             }
         }
+
         public DataTable catalogoEstab()
         {
             SqlCommand cmd = new SqlCommand();
@@ -816,33 +850,26 @@ namespace ActualizadorDoctosUnigis
 
         }
 
-        public string Deposito_viaje(  string viaje)
+        public async Task<string> Deposito_viaje(string viaje)
         {
+            ConsultaViajeID opr = new ConsultaViajeID
+            {
+                ApiKey = "1234",
+                IdViaje = Convert.ToInt32(viaje)
+            };
 
-                ConsultaViajeID opr = new ConsultaViajeID();
-                opr.ApiKey = "1234";
-            opr.IdViaje = Convert.ToInt32(viaje);
-                string jsonString = JsonConvert.SerializeObject(opr);
-                using (var client = new HttpClient())
-                {
+            string jsonString = JsonConvert.SerializeObject(opr);
+            
+            using (var client = new HttpClient())
+            {
+                var endpoint = new Uri("https://grupo-eyp.unigis.com/mapi/soap/logistic/service.asmx/ConsultarViaje");
+                var paylod = new StringContent(jsonString, Encoding.UTF8, "application/json");
+                var result = await client.PostAsync(endpoint, paylod);
+                var content = await result.Content.ReadAsStringAsync();
 
-                    var endpoint = new Uri("https://grupo-eyp.unigis.com/mapi/soap/logistic/service.asmx/ConsultarViaje");
-                    //var result = client.GetAsync(endpoint).Result;
-                    //var xmlR = result.Content.ReadAsStringAsync().Result;
-
-                    var paylod = new StringContent(jsonString, Encoding.UTF8, "application/json");
-                    var result = client.PostAsync(endpoint, paylod).Result.Content.ReadAsStringAsync().Result;
-                    // MessageBox.Show(result);
-
-
-                    string deposito = JsonConvert.DeserializeObject<ObtenerViaje_Response.Rootobject>(result).d.DepositoSalida.RefDepositoExterno.ToString();
+                string deposito = JsonConvert.DeserializeObject<ObtenerViaje_Response.Rootobject>(content).d.DepositoSalida.RefDepositoExterno.ToString();
                 return deposito;
-                     
-
-                }
-                 
-             
-
+            }
         }
 
         public DataTable ParadasViaje(string idViaje)
@@ -1179,8 +1206,207 @@ namespace ActualizadorDoctosUnigis
             conexion.cerrarconexion(conexion.conexion(server, BDD));
         }
 
-    }
+        public void EnviarPeticionCambio(string folio, string transaccion, string usuario, string dato, string valor_actual, string valor_nuevo, string solicita, string razon, string comentario)
+        {
+            using (SqlConnection conn = new SqlConnection("Data Source=192.168.8.4,9001;Initial Catalog=BMS;User ID=sa;Password=@Sistemas74"))
+            {
+                conn.Open();
 
+                using (SqlCommand cmd = new SqlCommand(
+                    "INSERT INTO EYP_UNIGIS_solicitudes_cambios(folio, transaccion, fecha, usuario, dato, valor_actual, valor_nuevo, solicita, razon, comentario, status) " +
+                    "SELECT @Folio, @Transaccion, GETDATE(), @Usuario, @Dato, @ValorActual, @ValorNuevo, @Solicita, @Razon, @Comentario, 'V' " +
+                    "WHERE NOT EXISTS (SELECT 1 FROM EYP_UNIGIS_solicitudes_cambios WHERE folio = @Folio AND transaccion = @Transaccion AND dato = @Dato AND status_revision IS NULL AND status = 'V')",
+                    conn))
+                {
+                    cmd.Parameters.Add("@Folio", SqlDbType.VarChar, 10).Value = folio.ToUpper();
+                    cmd.Parameters.Add("@Transaccion", SqlDbType.VarChar, 5).Value = transaccion;
+                    cmd.Parameters.Add("@Usuario", SqlDbType.VarChar, 5).Value = usuario;
+                    cmd.Parameters.Add("@Dato", SqlDbType.VarChar, 30).Value = dato;
+                    cmd.Parameters.Add("@ValorActual", SqlDbType.VarChar, 200).Value = valor_actual;
+                    cmd.Parameters.Add("@ValorNuevo", SqlDbType.VarChar, 200).Value = valor_nuevo;
+                    cmd.Parameters.Add("@Solicita", SqlDbType.VarChar, 5).Value = solicita;
+                    cmd.Parameters.Add("@Razon", SqlDbType.VarChar, 5).Value = razon;
+                    cmd.Parameters.Add("@Comentario", SqlDbType.VarChar, 500).Value = comentario;
+
+                    var rows = cmd.ExecuteNonQuery();
+                    if (rows == 0)
+                    {
+                        throw new PeticionCambioPendienteExisteException();
+                    }
+                }
+            }
+        }
+
+        public void CancelarSolicitud(int id, string folio, string transaccion, string dato, string usuario)
+        {
+            using (SqlConnection conn = new SqlConnection("Data Source=192.168.8.4,9001;Initial Catalog=BMS;User ID=sa;Password=@Sistemas74"))
+            {
+                conn.Open();
+
+                using (SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM EYP_UNIGIS_solicitudes_cambios WHERE folio = @Folio AND transaccion = @Transaccion AND dato = @Dato AND status = 'C' AND CAST(fecha AS DATE) = CAST(GETDATE() AS DATE)", conn))
+                {
+                    cmd.Parameters.Add("@Folio", SqlDbType.VarChar, 10).Value = folio;
+                    cmd.Parameters.Add("@Transaccion", SqlDbType.VarChar, 5).Value = transaccion;
+                    cmd.Parameters.Add("@Dato", SqlDbType.VarChar, 30).Value = dato;
+
+                    var count = (int)cmd.ExecuteScalar();
+                    if (count >= 3)
+                    {
+                        throw new LimiteCancelacionesDiariasException();
+                    }
+                }
+
+                using (SqlCommand cmd = new SqlCommand("UPDATE EYP_UNIGIS_solicitudes_cambios SET status = 'C', usuario_cancelacion = @Usuario, fecha_cancelacion = GETDATE() WHERE id = @Id AND status = 'V' AND status_revision IS NULL", conn))
+                {
+                    cmd.Parameters.Add("@Id", SqlDbType.Int).Value = id;
+                    cmd.Parameters.Add("@Usuario", SqlDbType.VarChar, 5).Value = usuario;
+
+                    var rows = cmd.ExecuteNonQuery();
+                    if (rows == 0)
+                    {
+                        using (SqlCommand check = new SqlCommand("SELECT TOP 1 status_revision FROM EYP_UNIGIS_solicitudes_cambios WHERE id = @Id", conn))
+                        {
+                            check.Parameters.Add("@Id", SqlDbType.Int).Value = id;
+
+                            using (var reader = check.ExecuteReader())
+                            {
+                                if (reader.Read() && !reader.IsDBNull(0))
+                                {
+                                    throw new SolicitudYaRevisadaException();
+                                }
+                            }
+                        }
+
+                        throw new SolicitudYaCanceladaException();
+                    }
+                }
+            }
+        }
+
+        public void RevisarSolicitud(int id, string usuario, string statusRevision)
+        {
+            using (SqlConnection conn = new SqlConnection("Data Source=192.168.8.4,9001;Initial Catalog=BMS;User ID=sa;Password=@Sistemas74"))
+            {
+                conn.Open();
+
+                int rows;
+                using (SqlTransaction tran = conn.BeginTransaction())
+                {
+                    try
+                    {
+                        using (SqlCommand cmd = new SqlCommand(
+                            "UPDATE EYP_UNIGIS_solicitudes_cambios SET status_revision = @StatusRevision, usuario_revision = @Usuario, fecha_revision = GETDATE() " +
+                            "WHERE id = @Id AND status = 'V' AND status_revision IS NULL",
+                            conn, tran))
+                        {
+                            cmd.Parameters.Add("@Id", SqlDbType.Int).Value = id;
+                            cmd.Parameters.Add("@Usuario", SqlDbType.VarChar, 5).Value = usuario;
+                            cmd.Parameters.Add("@StatusRevision", SqlDbType.VarChar, 1).Value = statusRevision;
+                            rows = cmd.ExecuteNonQuery();
+                        }
+
+                        if (rows > 0)
+                        {
+                            if (statusRevision == "A")
+                            {
+                                string folio, transaccion, dato, valorAnterior, valorNuevo;
+                                using (SqlCommand getSolicitud = new SqlCommand(
+                                    "SELECT folio, transaccion, dato, valor_actual, valor_nuevo FROM EYP_UNIGIS_solicitudes_cambios WHERE id = @Id",
+                                    conn, tran))
+                                {
+                                    getSolicitud.Parameters.Add("@Id", SqlDbType.Int).Value = id;
+                                    using (var reader = getSolicitud.ExecuteReader())
+                                    {
+                                        reader.Read();
+                                        folio         = reader.GetString(0).Trim();
+                                        transaccion   = reader.GetString(1).Trim();
+                                        dato          = reader.GetString(2).Trim();
+                                        valorAnterior = reader.GetString(3).Trim();
+                                        valorNuevo    = reader.GetString(4).Trim();
+                                    }
+                                }
+
+                                string codEstab;
+                                using (SqlCommand getCodEstab = new SqlCommand(
+                                    "SELECT TOP 1 cod_estab FROM facremtick WHERE folio = @Folio AND transaccion = @Transaccion",
+                                    conn, tran))
+                                {
+                                    getCodEstab.Parameters.Add("@Folio", SqlDbType.VarChar, 10).Value = folio;
+                                    getCodEstab.Parameters.Add("@Transaccion", SqlDbType.VarChar, 5).Value = transaccion;
+                                    var codEstabScalar = getCodEstab.ExecuteScalar();
+                                    if (codEstabScalar == null || codEstabScalar == DBNull.Value)
+                                    {
+                                        string tipoDoc = transaccion == "36" ? "FC" : "RC";
+                                        throw new InvalidOperationException($"El folio {tipoDoc}-{folio} no existe.");
+                                    }
+                                    codEstab = ((string)codEstabScalar).Trim();
+                                }
+
+                                string updateSql = null;
+                                if (dato == "Fecha Entrega")
+                                    updateSql = $"UPDATE facremtick SET fecha_entrega = CONVERT(smalldatetime, '{valorNuevo}', 120) WHERE folio = '{folio}' AND transaccion = '{transaccion}'";
+                                else if (dato == "Recoge Mercancia")
+                                    updateSql = $"UPDATE facremtick SET recoge_mercancia = {(valorNuevo == "1" ? 1 : 0)} WHERE folio = '{folio}' AND transaccion = '{transaccion}'";
+
+                                if (updateSql == null)
+                                    throw new InvalidOperationException($"Tipo de dato no reconocido: {dato}");
+
+                                string datoHistorico = dato == "Fecha Entrega" ? "Modificacion Fecha Entrega" : "Modificacion RM APP";
+                                string insertSql =
+                                    $"INSERT INTO historico_cambios (codigo, transaccion, fecha, dato, valor_anterior, valor_nuevo, usuario) " +
+                                    $"VALUES ('{folio}', '{transaccion}', GETDATE(), '{datoHistorico}', '{valorAnterior}', '{valorNuevo}', '{usuario}')";
+
+                                Consultar(
+                                    "BEGIN TRY " +
+                                        "BEGIN TRANSACTION; " +
+                                        $"{updateSql}; " +
+                                        "IF @@ROWCOUNT = 0 THROW 528491, 'El documento no existe en el establecimiento.', 1; " +
+                                        $"{insertSql}; " +
+                                        "COMMIT; " +
+                                    "END TRY " +
+                                    "BEGIN CATCH " +
+                                        "IF @@TRANCOUNT > 0 ROLLBACK; " +
+                                        "THROW; " +
+                                    "END CATCH;",
+                                    codEstab);
+                            }
+
+                            tran.Commit();
+                            return;
+                        }
+                    }
+                    catch
+                    {
+                        tran.Rollback();
+                        throw;
+                    }
+                }
+
+                using (SqlCommand check = new SqlCommand(
+                    "SELECT TOP 1 sc.status, sc.status_revision, rtrim(isnull(u.nombre, '')) as nombre_revisor " +
+                    "FROM EYP_UNIGIS_solicitudes_cambios sc " +
+                    "LEFT JOIN usuarios u ON sc.usuario_revision = u.usuario " +
+                    "WHERE sc.id = @Id",
+                    conn))
+                {
+                    check.Parameters.Add("@Id", SqlDbType.Int).Value = id;
+
+                    using (var reader = check.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            if (!reader.IsDBNull(1))
+                            {
+                                throw new SolicitudYaRevisadaException(reader.GetString(2));
+                            }
+
+                            throw new SolicitudYaCanceladaException();
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 
