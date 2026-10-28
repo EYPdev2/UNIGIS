@@ -33,8 +33,6 @@ namespace ActualizadorDoctosUnigis
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1Vista));
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
-            this.ActualizarVales = new System.ComponentModel.BackgroundWorker();
-            this.ConsultarDoctos = new System.ComponentModel.BackgroundWorker();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
             this.cmb_letra = new System.Windows.Forms.ComboBox();
             this.button3 = new System.Windows.Forms.Button();
@@ -75,19 +73,6 @@ namespace ActualizadorDoctosUnigis
             // 
             this.timer1.Interval = 30000;
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
-            // 
-            // ActualizarVales
-            // 
-            this.ActualizarVales.WorkerReportsProgress = true;
-            this.ActualizarVales.WorkerSupportsCancellation = true;
-            this.ActualizarVales.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker1_DoWork);
-            this.ActualizarVales.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.ActualizarVales_ProgressChanged);
-            this.ActualizarVales.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker1_RunWorkerCompleted);
-            // 
-            // ConsultarDoctos
-            // 
-            this.ConsultarDoctos.DoWork += new System.ComponentModel.DoWorkEventHandler(this.ConsultarDoctos_DoWork);
-            this.ConsultarDoctos.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.ConsultarDoctos_RunWorkerCompleted);
             // 
             // splitContainer2
             // 
@@ -434,8 +419,6 @@ namespace ActualizadorDoctosUnigis
 
         #endregion
         private System.Windows.Forms.Timer timer1;
-        private System.ComponentModel.BackgroundWorker ActualizarVales;
-        private System.ComponentModel.BackgroundWorker ConsultarDoctos;
         private System.Windows.Forms.SplitContainer splitContainer2;
         private System.Windows.Forms.Button bnt_Refrescar;
         private System.Windows.Forms.Label label1;

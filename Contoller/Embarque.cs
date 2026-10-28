@@ -9,6 +9,14 @@ using System.Threading.Tasks;
 
 namespace ActualizadorDoctosUnigis.Contoller
 {
+    class ResultadoEmbarque
+    {
+        public string Folio = "";
+        public bool Creado = false;
+        public int Partidas = 0;
+        public List<string> SinPendiente = new List<string>();
+    }
+
     class Embarque
     {
 
@@ -37,6 +45,10 @@ namespace ActualizadorDoctosUnigis.Contoller
                 }
 
 
+                if (dt.Rows.Count == 0)
+                    throw new Exception("El establecimiento " + cod_estab + " no está registrado en Eyp_Servidores.");
+
+                // Si la sucursal no responde se detiene todo: en la central no existe EYP_InsertarEmb
                 SqlConnection sqlconnection = new SqlConnection();
                 try
                 {
@@ -49,7 +61,7 @@ namespace ActualizadorDoctosUnigis.Contoller
 
                 catch (Exception ex)
                 {
-                    conexion = "192.168.8.4\\BMS-BMS";
+                    throw new Exception("No hay conexión con el servidor de la sucursal (" + dt.Rows[0].ItemArray[0].ToString().Trim() + "): " + ex.Message, ex);
                 }
 
                 return conexion;
@@ -61,108 +73,108 @@ namespace ActualizadorDoctosUnigis.Contoller
 
             }
         }
-        public string Insertar_embarque(string estab, ObtenerViaje_Response.Rootobject ovra,string usuario,string viaje)
+        // Encabezado y detalle van en una sola transaccion en la sucursal: si algo falla no queda un embarque a medias,
+        // y si ningun producto tenia algo pendiente se deshace todo para no dejar embarques vacios
+        public ResultadoEmbarque GenerarEmbarque(string estab, ObtenerViaje_Response.Rootobject ovra, string usuario, string viaje, List<Entrega> entregas)
         {
             string servidorA = obtenerServidor(estab);
             string servidor = servidorA.Substring(0, servidorA.IndexOf('-'));
             string BD = servidorA.Substring(servidorA.IndexOf('-') + 1);
-            DataTable dt = new DataTable();
-            SqlConnection openConA = new SqlConnection("Data Source = " + servidor + "; Initial Catalog = " + BD + "; User ID = sa; Password = @Sistemas74");
+            ResultadoEmbarque resultado = new ResultadoEmbarque();
 
-
-
-            using (SqlConnection openCon = new SqlConnection("Data Source = " + servidor + "; Initial Catalog = " + BD + "; User ID = sa; Password = @Sistemas74"))
-            //using (SqlConnection openCon = new SqlConnection("Data Source = 192.168.8.4\\bms; Initial Catalog = BMS03082022; User ID = sa; Password = @Sistemas74"))
+            Conexion cnn = new Conexion();
+            using (SqlConnection openCon = cnn.conexion(servidor, BD))
             {
-
-                //Validamos las fechas 
-                DateTime fecha_final = DateTime.Now;
-                if (ovra.d.FechaFinReal != null)
-                {
-                    fecha_final = ovra.d.FechaFinReal.Value ;
-                }
-
-                StringBuilder qry = new StringBuilder();
-                qry.Append("EYP_InsertarEmb");
-        
                 openCon.Open();
-                string insert = qry.ToString();
-                using (SqlCommand querySaveStaff = new SqlCommand(insert, openCon))
+                SqlTransaction tran = openCon.BeginTransaction();
+                try
                 {
+                    resultado.Folio = Insertar_embarque(openCon, tran, estab, ovra, usuario, viaje);
 
-                    SqlCommand cmd = new SqlCommand();
-                    cmd.CommandText = insert;
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.AddWithValue("@FechaInicio", ovra.d.FechaInicioReal.Value);
-                    cmd.Parameters.AddWithValue("@fechaFin", fecha_final);
-                    cmd.Parameters.AddWithValue("@vehiculo", ovra.d.Vehiculo.Dominio.Trim());
-                    cmd.Parameters.AddWithValue("@Fecha", ovra.d.FechaInicioReal.Value);
-                    cmd.Parameters.AddWithValue("@Peso",  ovra.d.Peso );
-                    cmd.Parameters.AddWithValue("@Volumen", ovra.d.Volumen);
-                    cmd.Parameters.AddWithValue("@Cod_estab", estab);
-                    cmd.Parameters.AddWithValue("@Chofer", ovra.d.Conductor.ReferenciaExterna);
-                    cmd.Parameters.AddWithValue("@usuario", usuario);
-                    cmd.Parameters.AddWithValue("@Viaje",viaje);
-                    querySaveStaff.Connection = openCon;
-                    cmd.Connection = openCon;
-                    SqlDataAdapter sqlDA = new SqlDataAdapter(cmd);
-                    string com =cmd.CommandText.ToString();
-                    string com2 = cmd.Parameters.ToString();
-                    sqlDA.Fill(dt);
-                    return dt.Rows[0].ItemArray[0].ToString();
+                    bool huboMovimiento = false;
+                    foreach (Entrega entrega in entregas)
+                    {
+                        string mensaje = Insertar_embarque_detalle(openCon, tran, entrega, resultado.Folio);
+                        if (mensaje == "")
+                            huboMovimiento = true;
+                        else
+                            resultado.SinPendiente.Add(entrega.Documento + " producto " + entrega.Cod_prod.Trim());
+                    }
 
+                    if (!huboMovimiento)
+                    {
+                        tran.Rollback();
+                        resultado.Folio = "";
+                        return resultado;
+                    }
 
+                    using (SqlCommand cuenta = new SqlCommand("select count(*) from embarques_productos where embarque = @Embarque", openCon, tran))
+                    {
+                        cuenta.Parameters.AddWithValue("@Embarque", resultado.Folio);
+                        resultado.Partidas = Convert.ToInt32(cuenta.ExecuteScalar());
+                    }
+
+                    tran.Commit();
+                    resultado.Creado = true;
+                }
+                catch
+                {
+                    try { tran.Rollback(); } catch (Exception) { }
+                    throw;
                 }
             }
-
-
-
-
+            return resultado;
         }
 
-        public  void Insertar_embarque_detalle(Entrega entregas, string estab ,string FolioE)
+        private string Insertar_embarque(SqlConnection openCon, SqlTransaction tran, string estab, ObtenerViaje_Response.Rootobject ovra, string usuario, string viaje)
         {
-            string servidorA = obtenerServidor(estab);
-            string servidor = servidorA.Substring(0, servidorA.IndexOf('-'));
-            string BD = servidorA.Substring(servidorA.IndexOf('-') + 1);
-            DataTable dt = new DataTable();
-            SqlConnection openConA = new SqlConnection("Data Source = " + servidor + "; Initial Catalog = " + BD + "; User ID = sa; Password = @Sistemas74");
+            if (ovra.d.FechaInicioReal == null)
+                throw new Exception("El viaje " + viaje + " no tiene fecha de inicio real en Unigis.");
 
-
-
-            using (SqlConnection openCon = new SqlConnection("Data Source = " + servidor + "; Initial Catalog = " + BD + "; User ID = sa; Password = @Sistemas74"))
-            //using (SqlConnection openCon = new SqlConnection("Data Source = 192.168.8.4\\bms; Initial Catalog = BMS03082022; User ID = sa; Password = @Sistemas74"))
+            //Validamos las fechas
+            DateTime fecha_final = DateTime.Now;
+            if (ovra.d.FechaFinReal != null)
             {
+                fecha_final = ovra.d.FechaFinReal.Value;
+            }
 
-                 
+            using (SqlCommand cmd = new SqlCommand("EYP_InsertarEmb", openCon, tran))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@FechaInicio", ovra.d.FechaInicioReal.Value);
+                cmd.Parameters.AddWithValue("@fechaFin", fecha_final);
+                cmd.Parameters.AddWithValue("@vehiculo", ovra.d.Vehiculo.Dominio.Trim());
+                cmd.Parameters.AddWithValue("@Fecha", ovra.d.FechaInicioReal.Value);
+                cmd.Parameters.AddWithValue("@Peso", ovra.d.Peso);
+                cmd.Parameters.AddWithValue("@Volumen", ovra.d.Volumen);
+                cmd.Parameters.AddWithValue("@Cod_estab", estab);
+                cmd.Parameters.AddWithValue("@Chofer", ovra.d.Conductor.ReferenciaExterna);
+                cmd.Parameters.AddWithValue("@usuario", usuario);
+                cmd.Parameters.AddWithValue("@Viaje", viaje);
+                DataTable dt = new DataTable();
+                SqlDataAdapter sqlDA = new SqlDataAdapter(cmd);
+                sqlDA.Fill(dt);
+                return dt.Rows[0].ItemArray[0].ToString();
+            }
+        }
 
-                StringBuilder qry = new StringBuilder();
-                qry.Append("EYP_InsertarEmb_detalle");
-
-                openCon.Open();
-                string insert = qry.ToString();
-                using (SqlCommand querySaveStaff = new SqlCommand(insert, openCon))
-                {
-
-                    SqlCommand cmd = new SqlCommand();
-                    cmd.CommandText = insert;
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.AddWithValue("@Embarque", FolioE);
-                    cmd.Parameters.AddWithValue("@Folio", entregas.referencia_ext);
-                    cmd.Parameters.AddWithValue("@Transaccion",entregas.Transaccion);
-                    cmd.Parameters.AddWithValue("@cod_prod", entregas.Cod_prod);
-                    cmd.Parameters.AddWithValue("@Cantidad", entregas.cantidad);
-                    cmd.Parameters.AddWithValue("@Unidad", "");
-                    cmd.Parameters.AddWithValue("@Cantidad_entregada" ,entregas.Cantidad_entregada);
-                    
-                    querySaveStaff.Connection = openCon;
-                    cmd.Connection = openCon;
-                    SqlDataAdapter sqlDA = new SqlDataAdapter(cmd);
-                    sqlDA.Fill(dt);
-                     
-
-
-                }
+        // Regresa "" cuando el SP embarco el producto o lo regreso a pendiente; si no tenia nada pendiente regresa el mensaje del SP
+        private string Insertar_embarque_detalle(SqlConnection openCon, SqlTransaction tran, Entrega entregas, string FolioE)
+        {
+            using (SqlCommand cmd = new SqlCommand("EYP_InsertarEmb_detalle", openCon, tran))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@Embarque", FolioE);
+                cmd.Parameters.AddWithValue("@Folio", entregas.referencia_ext);
+                cmd.Parameters.AddWithValue("@Transaccion", entregas.Transaccion);
+                cmd.Parameters.AddWithValue("@cod_prod", entregas.Cod_prod);
+                cmd.Parameters.AddWithValue("@Cantidad", entregas.cantidad);
+                cmd.Parameters.AddWithValue("@Unidad", "");
+                cmd.Parameters.AddWithValue("@Cantidad_entregada", entregas.Cantidad_entregada);
+                DataTable dt = new DataTable();
+                SqlDataAdapter sqlDA = new SqlDataAdapter(cmd);
+                sqlDA.Fill(dt);
+                return dt.Rows.Count > 0 ? dt.Rows[0][0].ToString().Trim() : "";
             }
         }
 

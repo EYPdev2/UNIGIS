@@ -186,7 +186,7 @@ namespace ActualizadorDoctosUnigis
 
             //  var tamaño= Screen.PrimaryScreen.Bounds.Height;
             //MessageBox.Show(tamaño.ToString());
-            ActualizarVales.RunWorkerAsync();
+            ActualizarKilosSucursales();
 
 
             //Form2 frm2 = new Form2();
@@ -555,7 +555,7 @@ namespace ActualizadorDoctosUnigis
             Estab = comboBox1.SelectedItem.ToString();
             dataGridView1.Refresh();
             lbl_Actualizando.Visible = true;
-            ConsultarDoctos.RunWorkerAsync();
+            CargarDocumentos();
         }
 
         private void btn_congif_Click(object sender, EventArgs e)
@@ -592,7 +592,7 @@ namespace ActualizadorDoctosUnigis
             Estab = comboBox1.SelectedItem.ToString();
             dataGridView1.Refresh();
             lbl_Actualizando.Visible = true;
-            ConsultarDoctos.RunWorkerAsync();
+            CargarDocumentos();
 
         }
 
@@ -601,37 +601,25 @@ namespace ActualizadorDoctosUnigis
            
         }
 
-        private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
+        // Sin BackgroundWorker: ver Libreria.EnSegundoPlano. Este ademas habilitaba button1 desde su propio hilo
+        private void ActualizarKilosSucursales()
         {
-
-            DataTable daux = new DataTable();
-            DataTable dt = new DataTable();
-            daux.Clear();
-
-            dt = q.Consultar("select  cod_estab from  EYP_Servidores where servidro_A is not null and bbdd is not null and Cod_estab not in('10','11','7','16','40')");
-
-
-            foreach (DataRow row in dt.Rows)
+            Libreria.EnSegundoPlano(this, () =>
             {
+                DataTable estabs = q.Consultar("select  cod_estab from  EYP_Servidores where servidro_A is not null and bbdd is not null and Cod_estab not in('10','11','7','16','40')");
 
-                //string sql = "select   e.abreviatura as ABREVIATURA, CONVERT(VARCHAR(50), CAST(sum(cantidad*peso_total) AS MONEY ),1) as KILOS ,sum(cantidad*peso_total) as Kilos2 \r\n" +
-                //    "from  [dbo].[F1534_Embarques_unigis]('" + row.ItemArray[0].ToString() + "') emb   \r\n" +
-                //    " inner join establecimientos e on e.cod_estab=emb.cod_estab and emb.status_unigis='0'  group by e.abreviatura\r\n";
-
-                string sql = "exec EYP_UNIGIS_KG '" + row.ItemArray[0].ToString() + "'";
-                // string sql = "select cod_estab,'100' from establecimientos where modo_operacion='O'";
-
-                DTKILOS.Merge(q.Consultar(sql, row.ItemArray[0].ToString()));
-
-
-
-                if (nEventsFired)
+                foreach (DataRow row in estabs.Rows)
                 {
-                    datagrid_update(DTKILOS);
+                    string sql = "exec EYP_UNIGIS_KG '" + row.ItemArray[0].ToString() + "'";
+                    DTKILOS.Merge(q.Consultar(sql, row.ItemArray[0].ToString()));
+
+                    if (nEventsFired)
+                    {
+                        datagrid_update(DTKILOS);
+                    }
                 }
-                ActualizarVales.ReportProgress(1);
-            }
-            button1.Enabled = true;
+                return true;
+            }, KilosSucursalesActualizados);
         }
         public void datagrid_update(DataTable dt)
         {
@@ -666,31 +654,40 @@ namespace ActualizadorDoctosUnigis
 
         }
 
-        private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        private void KilosSucursalesActualizados(bool terminado, Exception error)
         {
-            
-            ActualizarVales.CancelAsync();
-            //MessageBox.Show("la informacion fue cargada con exito ");
-            //   btnRefrescar.Enabled = true;
+            // Como antes: el boton solo se habilitaba si el recorrido de sucursales termino sin error
+            if (error == null)
+                button1.Enabled = true;
 
             timer1.Start();
-
         }
 
-        private void ConsultarDoctos_DoWork(object sender, DoWorkEventArgs e)
+        private void CargarDocumentos()
         {
-            dt = q.selectitemsKG(Estab);
-            DAux = q.selectitemsKG(Estab);
-
-
-
+            string estab = Estab;
+            Libreria.EnSegundoPlano(this, () => q.selectitemsKG(estab), DocumentosCargados);
         }
 
-        private void ConsultarDoctos_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        private void DocumentosCargados(DataTable datos, Exception error)
         {
             cmb_letra.Enabled = true;
             lbl_Actualizando.Visible = false;
             comboBox1.Enabled = true;
+
+            if (error != null)
+            {
+                bnt_Refrescar.Enabled = true;
+                MessageBox.Show("No fue posible consultar los documentos. Verifique la conexión con el servidor e intente de nuevo." + Environment.NewLine + Environment.NewLine + Libreria.MensajeError(error), "Error de consulta", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            dt = datos;
+            // Antes se volvia a ejecutar la misma consulta (EYP_UNIGIS_VIEW) solo para tener esta copia; tardaba el doble
+            DAux = datos.Copy();
+            // Antes cada refresco agregaba otra columna Enviar
+            dataGridView1.DataSource = null;
+            dataGridView1.Columns.Clear();
             try
             {
                 if (comboBox1.SelectedItem.ToString() == "")
@@ -1148,11 +1145,6 @@ namespace ActualizadorDoctosUnigis
                 { DTKILOS = q.Consultar(sql, row.ItemArray[0].ToString()); }
             }
 
-        }
-
-        private void ActualizarVales_ProgressChanged(object sender, ProgressChangedEventArgs e)
-        {
-           
         }
 
         private void splitContainer4_Panel2_Paint(object sender, PaintEventArgs e)

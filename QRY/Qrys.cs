@@ -265,12 +265,14 @@ namespace ActualizadorDoctosUnigis
 
         public DataTable SelecDocumentos(string cod_estab)
         {
+            // El establecimiento del documento se busca por llave (factura, movimiento interno o pedido, en ese orden):
+            // con LEFT JOIN a las tablas completas tardaba hasta 50 s en sucursal; asi tarda unos segundos con el mismo resultado
             var qry = $@"
                 SELECT
                     CONCAT(RTRIM(T.abreviatura), '-', PPE.folio) AS Documento,
                     PPE.folio,
                     PPE.transaccion,
-                    COALESCE(F.cod_estab, MI.cod_estab, PE.cod_estab, '') AS Estab,
+                    D.Estab,
                     E.nombre,
                     PPE.unidad,
                     P.cod_prod,
@@ -278,13 +280,15 @@ namespace ActualizadorDoctosUnigis
                     P.descripcion,
                     PPE.Status
                 FROM productos_por_embarcar PPE
-                LEFT JOIN facremtick F ON F.folio = PPE.folio AND F.transaccion = PPE.transaccion
-                LEFT JOIN movimientos_internos MI ON MI.folio = PPE.folio AND MI.transaccion = PPE.transaccion
-                LEFT JOIN pedestab PE ON PE.folio = PPE.folio AND PE.transaccion = PPE.transaccion
+                OUTER APPLY (SELECT COALESCE(
+                    (SELECT F.cod_estab FROM facremtick F WHERE F.folio = PPE.folio AND F.transaccion = PPE.transaccion),
+                    (SELECT MI.cod_estab FROM movimientos_internos MI WHERE MI.folio = PPE.folio AND MI.transaccion = PPE.transaccion),
+                    (SELECT PE.cod_estab FROM pedestab PE WHERE PE.folio = PPE.folio AND PE.transaccion = PPE.transaccion),
+                    '') AS Estab) D
                 LEFT JOIN transacciones T ON T.transaccion = PPE.transaccion
-                LEFT JOIN establecimientos E ON E.cod_estab = COALESCE(F.cod_estab, MI.cod_estab, PE.cod_estab, '')
+                JOIN establecimientos E ON E.cod_estab = D.Estab
                 LEFT JOIN productos P ON P.cod_prod = PPE.cod_prod
-                WHERE PPE.Status = '1' AND E.cod_estab = '{cod_estab}';
+                WHERE PPE.Status = '1' AND D.Estab = '{cod_estab}';
             ";
 
             DataTable resultados = Consultar(qry.ToString(), cod_estab);
@@ -638,20 +642,22 @@ namespace ActualizadorDoctosUnigis
 
         //    }
         //}
-        public void HistoricoEnvio(string documento, string producto, string cantidad, string deposito, string usuario, string fechaEntrega, string latitud, string longitud)
+        // cantidad es lo que se mando a Unigis y cantidadPendiente lo que habia por embarcar (el usuario puede mandar menos)
+        public void HistoricoEnvio(string documento, string producto, string cantidad, string deposito, string usuario, string fechaEntrega, string latitud, string longitud, string cantidadPendiente)
         {
             using (SqlConnection conn = new SqlConnection("Data Source=192.168.8.4,9001;Initial Catalog=BMS;User ID=sa;Password=@Sistemas74"))
             {
                 conn.Open();
                 using (SqlCommand cmd = new SqlCommand(
                     "INSERT INTO EYP_UNIGIS_envio_documentos_historico " +
-                    "(fecha, documento, producto, cantidad, deposito, usuario, fecha_entrega, latitud, longitud) " +
-                    "VALUES (GETDATE(), @Documento, @Producto, @Cantidad, @Deposito, @Usuario, @FechaEntrega, @Latitud, @Longitud)",
+                    "(fecha, documento, producto, cantidad, cantidad_pendiente, deposito, usuario, fecha_entrega, latitud, longitud) " +
+                    "VALUES (GETDATE(), @Documento, @Producto, @Cantidad, @CantidadPendiente, @Deposito, @Usuario, @FechaEntrega, @Latitud, @Longitud)",
                     conn))
                 {
                     cmd.Parameters.Add("@Documento",    SqlDbType.VarChar, 30).Value  = documento;
                     cmd.Parameters.Add("@Producto",     SqlDbType.VarChar, 10).Value  = producto;
                     cmd.Parameters.Add("@Cantidad",     SqlDbType.Money).Value         = Convert.ToDecimal(cantidad);
+                    cmd.Parameters.Add("@CantidadPendiente", SqlDbType.Money).Value    = string.IsNullOrWhiteSpace(cantidadPendiente) ? (object)DBNull.Value : Convert.ToDecimal(cantidadPendiente);
                     cmd.Parameters.Add("@Deposito",     SqlDbType.VarChar,  5).Value  = deposito;
                     cmd.Parameters.Add("@Usuario",      SqlDbType.VarChar,  5).Value  = usuario;
                     cmd.Parameters.Add("@FechaEntrega", SqlDbType.DateTime).Value      = DateTime.Parse(fechaEntrega, System.Globalization.CultureInfo.CurrentCulture, System.Globalization.DateTimeStyles.AssumeLocal);
@@ -660,6 +666,65 @@ namespace ActualizadorDoctosUnigis
                     cmd.ExecuteNonQuery();
                 }
             }
+        }
+
+        public class EnvioAnterior
+        {
+            public DateTime Fecha;
+            public string Usuario = "";
+            public string Nombre = "";
+        }
+
+        // Ultimo envio de cada documento segun el historico: cuando y quien lo mando
+        public Dictionary<string, EnvioAnterior> UltimoEnvioDocumentos(List<string> documentos)
+        {
+            Dictionary<string, EnvioAnterior> ultimos = new Dictionary<string, EnvioAnterior>(StringComparer.OrdinalIgnoreCase);
+            if (documentos.Count == 0)
+                return ultimos;
+
+            Conexion cnn = new Conexion();
+            using (SqlConnection conn = cnn.conexion())
+            using (SqlCommand cmd = new SqlCommand())
+            {
+                List<string> parametros = new List<string>();
+                for (int i = 0; i < documentos.Count; i++)
+                {
+                    parametros.Add("@d" + i);
+                    cmd.Parameters.Add("@d" + i, SqlDbType.VarChar, 30).Value = documentos[i];
+                }
+
+                cmd.Connection = conn;
+                cmd.CommandText = "SELECT h.documento, h.fecha, RTRIM(ISNULL(h.usuario, '')), RTRIM(ISNULL(u.nombre, '')) FROM (" +
+                                  "SELECT documento, fecha, usuario, ROW_NUMBER() OVER (PARTITION BY documento ORDER BY fecha DESC) AS orden " +
+                                  "FROM EYP_UNIGIS_envio_documentos_historico WHERE documento IN (" + string.Join(",", parametros) + ")) h " +
+                                  "LEFT JOIN usuarios u ON u.usuario = h.usuario WHERE h.orden = 1";
+                conn.Open();
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                        ultimos[reader.GetString(0).Trim()] = new EnvioAnterior { Fecha = reader.GetDateTime(1), Usuario = reader.GetString(2), Nombre = reader.GetString(3) };
+                }
+            }
+            return ultimos;
+        }
+
+        // Correos del cliente alterno (clientes_facturacion) de una venta de mostrador (cliente 0) en la sucursal: primero el del
+        // documento y despues el de la factura que origino el 713
+        public List<string> CorreosClienteAlterno(string folio, string transaccion, string cod_estab)
+        {
+            folio = folio.Replace("'", "''");
+            transaccion = transaccion.Replace("'", "''");
+            DataTable dt = Consultar("SELECT RTRIM(ISNULL(cf.e_mail, '')) FROM (" +
+                                     "SELECT 0 AS orden, '" + folio + "' AS folio, '" + transaccion + "' AS transaccion " +
+                                     "UNION ALL SELECT 1, folio_referencia, transaccion_referencia FROM movimientos_internos " +
+                                     "WHERE folio = '" + folio + "' AND transaccion = '" + transaccion + "') d " +
+                                     "JOIN facremtick f ON f.folio = d.folio AND f.transaccion = d.transaccion " +
+                                     "JOIN clientes_facturacion cf ON cf.cod_cte = f.cliente_alterno " +
+                                     "WHERE f.cod_cte = '0' AND f.tipo_cliente_alterno = 'C' ORDER BY d.orden", cod_estab);
+            List<string> correos = new List<string>();
+            foreach (DataRow row in dt.Rows)
+                correos.Add(row[0].ToString());
+            return correos;
         }
 
         public DataTable catalogoEstab()

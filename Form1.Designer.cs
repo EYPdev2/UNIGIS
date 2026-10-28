@@ -43,7 +43,6 @@ namespace ActualizadorDoctosUnigis
             this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.label2 = new System.Windows.Forms.Label();
             this.lbl_Actualizando = new System.Windows.Forms.Label();
-            this.ConsultarDoctos = new System.ComponentModel.BackgroundWorker();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
             this.splitContainer3 = new System.Windows.Forms.SplitContainer();
@@ -99,7 +98,6 @@ namespace ActualizadorDoctosUnigis
             this.dataGridView1.RowsDefaultCellStyle = dataGridViewCellStyle1;
             this.dataGridView1.Size = new System.Drawing.Size(1511, 526);
             this.dataGridView1.TabIndex = 1;
-            this.dataGridView1.CellValidating += new System.Windows.Forms.DataGridViewCellValidatingEventHandler(this.DataGridView1_CellValidating);
             this.dataGridView1.Sorted += new System.EventHandler(this.dataGridView1_Sorted);
             // 
             // label1
@@ -201,11 +199,6 @@ namespace ActualizadorDoctosUnigis
             this.lbl_Actualizando.TabIndex = 12;
             this.lbl_Actualizando.Text = "Consultando...";
             this.lbl_Actualizando.Visible = false;
-            // 
-            // ConsultarDoctos
-            // 
-            this.ConsultarDoctos.DoWork += new System.ComponentModel.DoWorkEventHandler(this.ConsultarDoctos_DoWork);
-            this.ConsultarDoctos.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.ConsultarDoctos_RunWorkerCompleted);
             // 
             // splitContainer1
             // 
@@ -432,7 +425,6 @@ namespace ActualizadorDoctosUnigis
         private System.Windows.Forms.ComboBox comboBox1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label lbl_Actualizando;
-        private System.ComponentModel.BackgroundWorker ConsultarDoctos;
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.SplitContainer splitContainer2;
         private System.Windows.Forms.SplitContainer splitContainer3;
