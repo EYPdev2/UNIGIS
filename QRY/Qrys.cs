@@ -1013,7 +1013,7 @@ namespace ActualizadorDoctosUnigis
             Conexion cnn = new Conexion();
             cnn.conexion(  );
             StringBuilder qry = new StringBuilder();
-            qry.Append("select distinct IdParada from EYP_Unis_parada where TipoObjeto='Parada' and IdViaje='" + idViaje + "'");
+            qry.Append("select distinct IdParada from EYP_Unis_parada where TipoObjeto='Parada' and IdViaje='" + idViaje + "' and Estado in ('Entregado','No Entregado','Entrega parcial','Validado')");
             cmd.CommandText = qry.ToString();
             cmd.CommandType = CommandType.Text;
             cmd.CommandTimeout = 0;
