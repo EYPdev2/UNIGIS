@@ -748,6 +748,74 @@ namespace ActualizadorDoctosUnigis
             return dataTable;
         }
 
+        // Establecimientos que el usuario puede consultar (mismo criterio que usa el visualizador)
+        public DataTable catalogoEstabUsuario(string usuario)
+        {
+            DataTable dataTable = new DataTable();
+            using (SqlConnection con = new Conexion().conexion())
+            using (SqlCommand cmd = con.CreateCommand())
+            {
+                cmd.CommandText = "select e.nombre, e.cod_estab from Eyp_Servidores es " +
+                                  "left join establecimientos e on es.Cod_estab = e.cod_estab " +
+                                  "where e.cod_estab in (select eu.cod_estab from establecimientos_usuario eu " +
+                                  "left join usuarios u on eu.usuario = u.usuario " +
+                                  "where u.usuario = @usuario and (u.multi_establecimiento = 1 or u.cod_estab = eu.cod_estab) and acceso = '1') " +
+                                  "order by cast (e.cod_estab as int)";
+                cmd.Parameters.AddWithValue("@usuario", usuario);
+                cmd.CommandTimeout = 60;
+                new SqlDataAdapter(cmd).Fill(dataTable);
+            }
+            return dataTable;
+        }
+
+        // Ejecuta EYP_UNIGIS_verificar_folio en el servidor del establecimiento, igual que el visualizador ejecuta EYP_UNIGIS
+        public DataTable VerificarFolio(string establecimiento, string folio, string transaccion)
+        {
+            string servidor = "";
+            string bdd = "";
+            string codEstab = "";
+
+            DataTable servidores = new DataTable();
+            using (SqlConnection con = new Conexion().conexion())
+            using (SqlCommand cmd = con.CreateCommand())
+            {
+                cmd.CommandText = "select es.servidor, es.bbdd, e.cod_estab from Eyp_Servidores es " +
+                                  "left join establecimientos e on es.Cod_estab = e.cod_estab where bbdd is not null " +
+                                  "and e.nombre = @nombre";
+                cmd.Parameters.AddWithValue("@nombre", establecimiento);
+                cmd.CommandTimeout = 60;
+                new SqlDataAdapter(cmd).Fill(servidores);
+            }
+            foreach (DataRow dr in servidores.Rows)
+            {
+                servidor = dr[0].ToString();
+                bdd = dr[1].ToString();
+                codEstab = dr[2].ToString().Trim();
+            }
+            if (servidor == "")
+            {
+                throw new InvalidOperationException("No se encontró el servidor del establecimiento " + establecimiento + ".");
+            }
+            if (servidor == "192.168.8.4,9001")
+            {
+                bdd = "BMS";
+            }
+
+            DataTable resultado = new DataTable();
+            using (SqlConnection con = new Conexion().conexion(servidor, bdd))
+            using (SqlCommand cmd = con.CreateCommand())
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.CommandText = "EYP_UNIGIS_verificar_folio";
+                cmd.CommandTimeout = 120;
+                cmd.Parameters.AddWithValue("@Estab", codEstab);
+                cmd.Parameters.AddWithValue("@Folio", folio);
+                cmd.Parameters.AddWithValue("@Transaccion", transaccion);
+                new SqlDataAdapter(cmd).Fill(resultado);
+            }
+            return resultado;
+        }
+
         public string Liberar_Ruta(string ruta)
         {
             SqlCommand cmd = new SqlCommand();
