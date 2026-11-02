@@ -88,13 +88,13 @@ namespace ActualizadorDoctosUnigis
             // 
             this.toolsMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.EnvioToolStripMenuItem,
+            this.verificarDocumentoToolStripMenuItem,
             this.confirmarOrdenesToolStripMenuItem,
             this.validarParadasToolStripMenuItem,
             this.liberarParadasToolStripMenuItem,
             this.pendientesPorEmbarcarToolStripMenuItem,
             this.kGPendientesToolStripMenuItem,
-            this.valesPendienteToolStripMenuItem,
-            this.verificarDocumentoToolStripMenuItem});
+            this.valesPendienteToolStripMenuItem});
             this.toolsMenu.Name = "toolsMenu";
             this.toolsMenu.Size = new System.Drawing.Size(52, 20);
             this.toolsMenu.Text = "&Unigis";
@@ -106,7 +106,15 @@ namespace ActualizadorDoctosUnigis
             this.EnvioToolStripMenuItem.Size = new System.Drawing.Size(175, 22);
             this.EnvioToolStripMenuItem.Text = "&Envio Documentos";
             this.EnvioToolStripMenuItem.Click += new System.EventHandler(this.optionsToolStripMenuItem_Click);
-            // 
+            //
+            // verificarDocumentoToolStripMenuItem
+            //
+            this.verificarDocumentoToolStripMenuItem.Enabled = false;
+            this.verificarDocumentoToolStripMenuItem.Name = "verificarDocumentoToolStripMenuItem";
+            this.verificarDocumentoToolStripMenuItem.Size = new System.Drawing.Size(175, 22);
+            this.verificarDocumentoToolStripMenuItem.Text = "Verificar Documento";
+            this.verificarDocumentoToolStripMenuItem.Click += new System.EventHandler(this.verificarDocumentoToolStripMenuItem_Click);
+            //
             // confirmarOrdenesToolStripMenuItem
             // 
             this.confirmarOrdenesToolStripMenuItem.Enabled = false;
@@ -156,14 +164,6 @@ namespace ActualizadorDoctosUnigis
             this.valesPendienteToolStripMenuItem.Text = "Vales Pendiente";
             this.valesPendienteToolStripMenuItem.Click += new System.EventHandler(this.valesPendienteToolStripMenuItem_Click);
             //
-            // verificarDocumentoToolStripMenuItem
-            //
-            this.verificarDocumentoToolStripMenuItem.Enabled = false;
-            this.verificarDocumentoToolStripMenuItem.Name = "verificarDocumentoToolStripMenuItem";
-            this.verificarDocumentoToolStripMenuItem.Size = new System.Drawing.Size(175, 22);
-            this.verificarDocumentoToolStripMenuItem.Text = "Verificar Documento";
-            this.verificarDocumentoToolStripMenuItem.Click += new System.EventHandler(this.verificarDocumentoToolStripMenuItem_Click);
-            // 
             // facturasToolStripMenuItem1
             // 
             this.facturasToolStripMenuItem1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
