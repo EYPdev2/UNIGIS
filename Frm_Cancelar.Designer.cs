@@ -31,11 +31,9 @@
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Frm_Cancelar));
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
-            this.Enviar = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.label2 = new System.Windows.Forms.Label();
             this.btn_Enviar = new System.Windows.Forms.Button();
-            this.ConsultarDoctos = new System.ComponentModel.BackgroundWorker();
             this.label1 = new System.Windows.Forms.Label();
             this.bnt_Refrescar = new System.Windows.Forms.Button();
             this.button2 = new System.Windows.Forms.Button();
@@ -53,20 +51,12 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.dataGridView1.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.AllCells;
             this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridView1.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.Enviar});
             this.dataGridView1.Location = new System.Drawing.Point(12, 27);
             this.dataGridView1.Name = "dataGridView1";
             dataGridViewCellStyle4.ForeColor = System.Drawing.Color.Black;
             this.dataGridView1.RowsDefaultCellStyle = dataGridViewCellStyle4;
             this.dataGridView1.Size = new System.Drawing.Size(1226, 347);
             this.dataGridView1.TabIndex = 13;
-            // 
-            // Enviar
-            // 
-            this.Enviar.HeaderText = "Enviar";
-            this.Enviar.Name = "Enviar";
-            this.Enviar.Width = 43;
             // 
             // comboBox1
             // 
@@ -98,14 +88,9 @@
             this.btn_Enviar.Name = "btn_Enviar";
             this.btn_Enviar.Size = new System.Drawing.Size(83, 23);
             this.btn_Enviar.TabIndex = 20;
-            this.btn_Enviar.Text = "Enviar";
+            this.btn_Enviar.Text = "Cancelar";
             this.btn_Enviar.UseVisualStyleBackColor = true;
             this.btn_Enviar.Click += new System.EventHandler(this.btn_Enviar_Click);
-            // 
-            // ConsultarDoctos
-            // 
-            this.ConsultarDoctos.DoWork += new System.ComponentModel.DoWorkEventHandler(this.ConsultarDoctos_DoWork);
-            this.ConsultarDoctos.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.ConsultarDoctos_RunWorkerCompleted);
             // 
             // label1
             // 
@@ -207,12 +192,10 @@
         #endregion
 
         private System.Windows.Forms.DataGridView dataGridView1;
-        private System.Windows.Forms.DataGridViewCheckBoxColumn Enviar;
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.ComboBox comboBox1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Button btn_Enviar;
-        private System.ComponentModel.BackgroundWorker ConsultarDoctos;
         private System.Windows.Forms.Button bnt_Refrescar;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.ComboBox cmb_letra;

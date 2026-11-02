@@ -20,8 +20,10 @@ namespace ActualizadorDoctosUnigis.Contoller
         public string chofer { get; set; }
 
         public string Estado { get; set; }
+        public string Documento { get; set; }
         public Entrega(DataRow dgv,string ch, string v )
         {
+            Documento = dgv["Ref.Documento"].ToString().Split('|')[0].Trim();
             Cod_prod = dgv["Producto"].ToString();
             referencia_ext = folio(dgv["Ref.Documento"].ToString(), 0);
             cantidad = Convert.ToDouble(dgv["Cantidad"].ToString());

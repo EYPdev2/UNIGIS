@@ -5,6 +5,7 @@ using System.Data;
 using System.IO;
 using System.Net.Http;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using System.Xml;
 using Microsoft.Office.Interop.Excel;
@@ -33,7 +34,7 @@ namespace ActualizadorDoctosUnigis
             string cod_cte = dt.Rows[0]["cod_cte"].ToString().Trim();
             string RZCliente = dt.Rows[0]["Razon_social"].ToString().Trim();
             string TelCl = dt.Rows[0]["TELEFONO"].ToString().Trim();
-            string E_mailC = dt.Rows[0]["e_mail"].ToString().Trim();
+            string E_mailC = CorreoCliente(dt.Rows[0]["e_mail"].ToString());
             string dirC = dt.Rows[0]["Direccion"].ToString().Trim();
             double pesoT = 0;
             double cantidadT = 0;
@@ -88,7 +89,7 @@ namespace ActualizadorDoctosUnigis
                 xmlw.WriteString(TelCl);
                 xmlw.WriteEndElement();
                 xmlw.WriteStartElement("EMail", unis);
-                xmlw.WriteString("aux.sistemas3@EYP74.com");
+                xmlw.WriteString(E_mailC);
                 xmlw.WriteEndElement();
                 xmlw.WriteStartElement("Direccion", unis);
                 xmlw.WriteString(dirC);
@@ -194,7 +195,7 @@ namespace ActualizadorDoctosUnigis
                 xmlw.WriteStartElement("Longitud", unis); xmlw.WriteString(dt.Rows[0]["Longitud"].ToString().Trim()); xmlw.WriteEndElement();
                 xmlw.WriteStartElement("Observaciones", unis); xmlw.WriteString("-"); xmlw.WriteEndElement();
                 xmlw.WriteStartElement("B2CPassword", unis); xmlw.WriteString("-"); xmlw.WriteEndElement();
-                xmlw.WriteStartElement("Email", unis); xmlw.WriteString(""); xmlw.WriteEndElement();
+                xmlw.WriteStartElement("Email", unis); xmlw.WriteString(E_mailC); xmlw.WriteEndElement();
                 xmlw.WriteStartElement("cargaExclusiva", unis); xmlw.WriteString("false"); xmlw.WriteEndElement();
                 xmlw.WriteStartElement("requiereTurno", unis); xmlw.WriteString("false"); xmlw.WriteEndElement();
                 xmlw.WriteStartElement("ultimaVisita", unis); xmlw.WriteString("false"); xmlw.WriteEndElement();
@@ -285,6 +286,16 @@ namespace ActualizadorDoctosUnigis
 
                 return sw.ToString();
             }
+        }
+
+        // El e_mail del ERP puede traer varios correos (separados por ; o ,), "nombre <correo>" o basura como "."; a Unigis se
+        // manda solo el primer correo con formato valido, o vacio si no hay ninguno
+        static readonly Regex FormatoCorreo = new Regex(@"[A-Za-z0-9._%+\-]+@[A-Za-z0-9\-]+(\.[A-Za-z0-9\-]+)*\.[A-Za-z]{2,}");
+
+        public static string CorreoCliente(string e_mail)
+        {
+            Match correo = FormatoCorreo.Match(e_mail ?? "");
+            return correo.Success ? correo.Value : "";
         }
 
         public string validar_envios(DataTable dt)

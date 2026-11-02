@@ -48,7 +48,6 @@ namespace ActualizadorDoctosUnigis
             this.txt_viaje.Name = "txt_viaje";
             this.txt_viaje.Size = new System.Drawing.Size(100, 20);
             this.txt_viaje.TabIndex = 0;
-            this.txt_viaje.TextChanged += new System.EventHandler(this.txt_viaje_TextChanged);
             this.txt_viaje.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txt_viaje_KeyDown);
             this.txt_viaje.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txt_viaje_KeyPress);
             // 
@@ -84,7 +83,6 @@ namespace ActualizadorDoctosUnigis
             this.dataGridView1.RowsDefaultCellStyle = dataGridViewCellStyle3;
             this.dataGridView1.Size = new System.Drawing.Size(554, 386);
             this.dataGridView1.TabIndex = 2;
-            this.dataGridView1.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView1_CellContentClick);
             // 
             // button1
             // 
@@ -94,7 +92,7 @@ namespace ActualizadorDoctosUnigis
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(127, 23);
             this.button1.TabIndex = 3;
-            this.button1.Text = "Validar Paradas";
+            this.button1.Text = "Liberar Paradas";
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 

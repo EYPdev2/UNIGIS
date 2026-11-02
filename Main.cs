@@ -277,6 +277,16 @@ namespace ActualizadorDoctosUnigis
             Child_form.Show();
         }
 
+        private void verificarDocumentoToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            frm_VerificarDocumento Child_form = new frm_VerificarDocumento(usuario);
+            Child_form.MdiParent = this;
+            childFormNumber += 1;
+            Child_form.Text = "Verificar Documento " + childFormNumber;
+            Child_form.WindowState = System.Windows.Forms.FormWindowState.Maximized;
+            Child_form.Show();
+        }
+
         private void liquidacionToolStripMenuItem_Click(object sender, EventArgs e)
         {
 
@@ -346,6 +356,7 @@ namespace ActualizadorDoctosUnigis
             pendientesPorEmbarcarToolStripMenuItem.Enabled = Convert.ToBoolean(Convert.ToInt32(acceso[6].ToString()));
             kGPendientesToolStripMenuItem.Enabled = Convert.ToBoolean(Convert.ToInt32(acceso[6].ToString()));
             valesPendienteToolStripMenuItem.Enabled = Convert.ToBoolean(Convert.ToInt32(acceso[6].ToString()));
+            verificarDocumentoToolStripMenuItem.Enabled = Convert.ToBoolean(Convert.ToInt32(acceso[0].ToString()));
             modificarPickuoToolStripMenuItem.Enabled= Convert.ToBoolean(Convert.ToInt32(acceso[0].ToString()));
             revisionSolicitudesToolStripMenuItem.Enabled = true;
         }
