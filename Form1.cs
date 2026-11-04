@@ -84,6 +84,8 @@ namespace ActualizadorDoctosUnigis
 
                 yaEnviados = Validar_folio(dtLocalC, cod_estab);
                 QuitarPickupYaEnviados(dtLocalC);
+                if (!AgregarPickupsDeDocumentos(dtLocalC))
+                    return;
             }
             catch (Exception ex)
             {
@@ -949,6 +951,68 @@ namespace ActualizadorDoctosUnigis
             {
                 if (ultimos.ContainsKey(auxF.Rows[i]["N° DOCUMENTO"].ToString().Trim()))
                     auxF.Rows[i].Delete();
+            }
+        }
+
+        // Logistica solo marca la factura o remision: su PP (el que EYP_UNIGIS liga con esa venta en Transaccion_Origen) se ofrece en una
+        // ventana para enviarlo junto si no va marcado, aunque ya se haya enviado antes (la ventana muestra su ultimo envio). Regresa
+        // false si cancelan el envio
+        private bool AgregarPickupsDeDocumentos(DataTable auxF)
+        {
+            HashSet<string> enEnvio = new HashSet<string>(from r in auxF.AsEnumerable()
+                                                          select r["N° DOCUMENTO"].ToString().Trim());
+            Dictionary<string, string> ventaDePickup = new Dictionary<string, string>();
+            List<DataRow> pickups = new List<DataRow>();
+            foreach (DataRow doc in dtDocs.Rows)
+            {
+                // Un PP marcado a mano no se ofrece: ya va en el envio, o lo quitaron en "¿Desea enviarlos otra vez?"
+                string pickup = doc["N° DOCUMENTO"].ToString().Trim();
+                string venta = VentaDelPickup(doc);
+                if (venta == null || Convert.ToBoolean(doc["Enviar"]) || !enEnvio.Contains(venta))
+                    continue;
+
+                ventaDePickup[pickup] = venta;
+                pickups.Add(doc);
+            }
+            if (pickups.Count == 0)
+                return true;
+
+            // Envio mas reciente de cada PP en el historico (de cualquiera de sus productos); los que nunca se han enviado no vienen
+            Dictionary<string, Qrys.EnvioAnterior> ultimoEnvio = q.UltimoEnvioDocumentos(pickups.Select(p => p["N° DOCUMENTO"].ToString().Trim()).ToList());
+
+            List<DataRow> elegidos;
+            using (frm_PickupsDocumentos frm = new frm_PickupsDocumentos(pickups, ventaDePickup, ultimoEnvio))
+            {
+                if (frm.ShowDialog(this) != DialogResult.OK)
+                    return false;
+                elegidos = frm.Elegidos;
+            }
+
+            // El PP va con los productos que tenga marcados en su ventana de Productos (todos, si no se tocaron)
+            foreach (DataRow pickup in elegidos)
+            {
+                foreach (DataRow dr in productosPorDocumento[pickup["N° DOCUMENTO"].ToString()])
+                {
+                    if (Convert.ToBoolean(dr["Seleccionado"]))
+                        CopiarRenglon(dr, auxF);
+                }
+            }
+            return true;
+        }
+
+        // Venta de la que sale un PP segun EYP_UNIGIS: Transaccion_Origen 36 es factura y 37 remision, con el mismo folio que el PP.
+        // Regresa null si no es PP o si no sale de una venta (Pick Up Proveedor de una orden de compra sola, que la trae vacia)
+        private static string VentaDelPickup(DataRow doc)
+        {
+            string nDoc = doc["N° DOCUMENTO"].ToString().Trim();
+            if (!nDoc.StartsWith("PP-"))
+                return null;
+
+            switch (doc["Transaccion_Origen"].ToString().Trim())
+            {
+                case "36": return "FC-" + FolioDocumento(nDoc);
+                case "37": return "RC-" + FolioDocumento(nDoc);
+                default: return null;
             }
         }
     }

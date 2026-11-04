@@ -309,6 +309,12 @@
     <Compile Include="frm_FechaEntregaV2.Designer.cs">
       <DependentUpon>frm_FechaEntregaV2.cs</DependentUpon>
     </Compile>
+    <Compile Include="frm_PickupsDocumentos.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frm_PickupsDocumentos.Designer.cs">
+      <DependentUpon>frm_PickupsDocumentos.cs</DependentUpon>
+    </Compile>
     <Compile Include="frm_ProductosDocumento.cs">
       <SubType>Form</SubType>
     </Compile>
