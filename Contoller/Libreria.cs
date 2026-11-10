@@ -40,6 +40,7 @@ namespace ActualizadorDoctosUnigis.Contoller
             public string Estado = "";
             public string Operacion = "";
             public DateTime? FechaEntrega;
+            public DateTime? FechaEstado;   // cuando paso al estado actual (UTC)
         }
 
         // Orden de pedido en Unigis por referencia (FC-XXXX). Estados vistos: Inicial, Planificar, Planificado, En transito,
@@ -50,13 +51,24 @@ namespace ActualizadorDoctosUnigis.Contoller
             if (orden == null)
                 return null;
 
+            JToken detalle = orden["EstadoDetalle"];
             return new OrdenUnigis
             {
                 IdPedido = (int?)orden["IdPedido"] ?? 0,
                 Estado = ((string)orden["Estado"] ?? "").Trim(),
                 Operacion = ((string)orden["CodigoOperacion"] ?? "").Trim(),
-                FechaEntrega = (DateTime?)orden["FechaEntrega"]
+                FechaEntrega = (DateTime?)orden["FechaEntrega"],
+                FechaEstado = detalle != null && detalle.Type == JTokenType.Object ? Fecha(detalle["EstadoFecha"]) : null
             };
+        }
+
+        // Fecha de Unigis ("\/Date(ms)\/", llega como UTC); null si no viene o es la fecha vacia (01/01/0001)
+        static DateTime? Fecha(JToken valor)
+        {
+            if (valor == null || valor.Type != JTokenType.Date)
+                return null;
+            DateTime fecha = (DateTime)valor;
+            return fecha.Year < 2000 ? (DateTime?)null : fecha;
         }
 
         // Elimina la orden de pedido en Unigis (EliminarOrdenesPedido no borra los maestros de clientes y domicilios)
@@ -73,6 +85,9 @@ namespace ActualizadorDoctosUnigis.Contoller
             public int IdJornada;
             public int IdRuta;
             public string Estado = "";
+            public string RefDocumento = "";           // referencia con la que se encontro: "FC-XXXX|01" o "PP-XXXX|00"
+            public DateTime? FechaJornada;             // UTC
+            public DateTime? FechaUltimoCambioEstado;  // UTC
         }
 
         // Orden de entrega que Unigis crea al consolidar el pedido, dentro de una jornada: "FC-XXXX|01" en entregas y
@@ -83,9 +98,11 @@ namespace ActualizadorDoctosUnigis.Contoller
         public static OrdenEntregaUnigis ConsultarOrdenEntregaUnigis(string referencia)
         {
             JToken orden = null;
+            string refDocumento = null;
             foreach (string sufijo in new[] { "|01", "|00" })
             {
-                orden = LlamarUnigis("ConsultarOrdenEntrega", JsonConvert.SerializeObject(new { ApiKey = "1234", RefDocumento = referencia + sufijo, Sucursal = "", Operacion = "", TipoOperacion = "" }));
+                refDocumento = referencia + sufijo;
+                orden = LlamarUnigis("ConsultarOrdenEntrega", JsonConvert.SerializeObject(new { ApiKey = "1234", RefDocumento = refDocumento, Sucursal = "", Operacion = "", TipoOperacion = "" }));
                 if (orden != null)
                     break;
             }
@@ -98,7 +115,37 @@ namespace ActualizadorDoctosUnigis.Contoller
                 IdOrden = (int?)orden["IdOrden"] ?? 0,
                 IdJornada = (int?)orden["IdJornada"] ?? 0,
                 IdRuta = (int?)orden["IdRuta"] ?? 0,
-                Estado = estado != null && estado.Type == JTokenType.Object ? ((string)estado["Descripcion"] ?? "").Trim() : ""
+                Estado = estado != null && estado.Type == JTokenType.Object ? ((string)estado["Descripcion"] ?? "").Trim() : "",
+                RefDocumento = refDocumento,
+                FechaJornada = Fecha(orden["FechaJornada"]),
+                FechaUltimoCambioEstado = Fecha(orden["FechaUltimoCambioEstado"])
+            };
+        }
+
+        public class ParadaUnigis
+        {
+            public int IdViaje;
+            public int Secuencia;       // numero de parada dentro del viaje
+            public string Estado = "";  // Pendiente, En transito, Visitado, Entregado, No Entregado, Validado, Liberado...
+            public int IdOrden;         // orden de entrega a la que pertenece la parada
+        }
+
+        // Parada mas reciente del documento, buscada solo por su referencia ("FC-XXXX|01") con IdViaje 0. Unigis crea la parada
+        // al crear el viaje (cuando la orden pasa a Documentado). Si el documento se reenvio puede ser la parada de una orden
+        // anterior: quien llama compara IdOrden con la orden vigente. Regresa null si el documento no esta en ningun viaje
+        public static ParadaUnigis ConsultarParadaUnigis(string refDocumento)
+        {
+            JToken parada = LlamarUnigis("ConsultarParada", JsonConvert.SerializeObject(new { ApiKey = "1234", IdViaje = 0, Secuencia = 0, RefDocumento = refDocumento, RefDocumentoAdicional = "", RefCliente = "" }));
+            if (parada == null)
+                return null;
+
+            JToken orden = parada["OrdenParada"];
+            return new ParadaUnigis
+            {
+                IdViaje = (int?)parada["IdViaje"] ?? 0,
+                Secuencia = (int?)parada["Secuencia"] ?? 0,
+                Estado = ((string)parada["EstadoParada"] ?? "").Trim(),
+                IdOrden = orden != null && orden.Type == JTokenType.Object ? (int?)orden["IdOrden"] ?? 0 : 0
             };
         }
 

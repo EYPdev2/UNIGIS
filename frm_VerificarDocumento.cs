@@ -1,7 +1,10 @@
-﻿using System;
+﻿using ActualizadorDoctosUnigis.Contoller;
+using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Drawing;
+using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -18,6 +21,18 @@ namespace ActualizadorDoctosUnigis
 
         // Establecimientos que no se verifican en este formulario
         static readonly string[] EstablecimientosExcluidos = { "7", "10", "40", "45" };
+
+        // Prefijo con el que cada transaccion se sube a Unigis ("FC-SAA123"). Los Pick Up se suben como "PP-" con el folio que
+        // se captura: el de la factura o remision (848FC/848RC, 30FC/30RC) o el de la orden de compra (30OC)
+        static readonly Dictionary<string, string> PrefijoUnigis = new Dictionary<string, string>
+        {
+            { "29", "PE" }, { "35", "TE" }, { "713", "EdMaC" }, { "36", "FC" }, { "37", "RC" },
+            { "848FC", "PP" }, { "848RC", "PP" }, { "30FC", "PP" }, { "30RC", "PP" }, { "30OC", "PP" }
+        };
+
+        // Numero de la consulta a Unigis vigente: si se verifica otro folio o se limpia antes de que Unigis conteste,
+        // la respuesta anterior se descarta
+        int consultaUnigis;
 
         // Tipos de documento que sabe verificar el SP. Para agregar otro: darlo de alta aqui y en el SP.
         class TipoDocumento
@@ -109,6 +124,7 @@ namespace ActualizadorDoctosUnigis
             string transaccion = tipo.Transaccion;
 
             dgv_Resultado.DataSource = null;
+            LimpiarUnigis();
             btn_Verificar.Enabled = false;
             btn_Limpiar.Enabled = false;
             UseWaitCursor = true;
@@ -136,6 +152,12 @@ namespace ActualizadorDoctosUnigis
                 ColumnasCantidad(tipo.Transaccion);
                 dgv_Resultado.DataSource = resultado;
                 dgv_Resultado.ClearSelection();
+
+                string prefijo;
+                if (PrefijoUnigis.TryGetValue(transaccion, out prefijo))
+                {
+                    _ = MostrarUnigisAsync(prefijo + "-" + folio.ToUpperInvariant());
+                }
             }
             catch (SqlException ex) when (ex.Number == 2812)
             {
@@ -151,7 +173,7 @@ namespace ActualizadorDoctosUnigis
             {
                 if (!IsDisposed)
                 {
-                    UseWaitCursor = false;
+                    QuitarCursorEspera();
                     btn_Verificar.Enabled = true;
                     btn_Limpiar.Enabled = true;
 
@@ -172,6 +194,7 @@ namespace ActualizadorDoctosUnigis
         private void btn_Limpiar_Click(object sender, EventArgs e)
         {
             dgv_Resultado.DataSource = null;
+            LimpiarUnigis();
             ColumnasCantidad("");
             txt_Folio.Clear();
             cmb_Transaccion.SelectedIndex = -1;
@@ -238,6 +261,108 @@ namespace ActualizadorDoctosUnigis
                 col_CantidadEmb.DataPropertyName = "cantidad_emb";
                 col_CantidadEmb.HeaderText = "Cant. Emb.";
             }
+        }
+
+        // Recuadro UNIGIS: siempre visible, vacio hasta que se verifica un folio. Muestra lo que tiene Unigis del folio (estado
+        // de la orden, jornada y ruta, viaje y parada). Se consulta despues de llenar el grid, sin bloquear el formulario
+        private async Task MostrarUnigisAsync(string referencia)
+        {
+            int consulta = ++consultaUnigis;
+            MostrarLineasUnigis(new[] { "Consultando UNIGIS…", "", "" });
+
+            string[] lineas;
+            try
+            {
+                lineas = await Task.Run(() => LineasUnigis(referencia));
+            }
+            catch (Exception ex)
+            {
+                lineas = new[] { "No se pudo consultar UNIGIS: " + Libreria.MensajeError(ex), "—", "—" };
+            }
+
+            if (IsDisposed || consulta != consultaUnigis)
+            {
+                return;
+            }
+            MostrarLineasUnigis(lineas);
+        }
+
+        // Deja el recuadro vacio y descarta la consulta a Unigis que siga en curso
+        private void LimpiarUnigis()
+        {
+            consultaUnigis++;
+            MostrarLineasUnigis(new[] { "", "", "" });
+        }
+
+        private void MostrarLineasUnigis(string[] lineas)
+        {
+            lbl_UnigisFolio.Text = lineas[0];
+            lbl_UnigisJornada.Text = lineas[1];
+            lbl_UnigisViaje.Text = lineas[2];
+        }
+
+        // Las tres lineas del recuadro: folio, jornada y viaje. Corre fuera del hilo de la pantalla
+        private static string[] LineasUnigis(string referencia)
+        {
+            Libreria.OrdenUnigis pedido = Libreria.ConsultarOrdenUnigis(referencia);
+            Libreria.OrdenEntregaUnigis orden = Libreria.ConsultarOrdenEntregaUnigis(referencia);
+            if (pedido == null && orden == null)
+            {
+                return new[] { "No está en UNIGIS", "—", "—" };
+            }
+
+            // Pedido en Inicial: todavia no tiene orden, o es un folio reenviado y la orden que devuelve Unigis es la del envio
+            // anterior hasta que se crea la nueva (al pasar a Planificar). Solo se muestra el pedido
+            if (string.Equals(pedido?.Estado, "Inicial", StringComparison.OrdinalIgnoreCase))
+            {
+                return new[] { pedido.Estado + ConFecha(pedido.FechaEstado, "dd/MM/yyyy HH:mm"), "—", "—" };
+            }
+
+            // Pedido ya planificado sin orden (se elimino en Unigis): a Logistica no le sirve el estado del pedido
+            if (orden == null)
+            {
+                return new[] { "Sin orden", "—", "—" };
+            }
+
+            string folio = orden.Estado + ConFecha(orden.FechaUltimoCambioEstado, "dd/MM/yyyy HH:mm") + " · Orden " + orden.IdOrden;
+            string jornada = orden.IdJornada == 0
+                ? "Sin jornada"
+                : orden.IdJornada + ConFecha(orden.FechaJornada, "dd/MM/yyyy") + " · " + (orden.IdRuta > 0 ? "Ruta " + orden.IdRuta : "Sin ruta");
+
+            // La parada mas reciente del folio puede ser de una orden anterior (folio reenviado): solo cuenta si es de esta orden
+            string viaje;
+            try
+            {
+                Libreria.ParadaUnigis parada = Libreria.ConsultarParadaUnigis(orden.RefDocumento);
+                if (parada != null && parada.IdOrden == orden.IdOrden)
+                {
+                    viaje = parada.IdViaje + " · Parada " + parada.Secuencia + " · " + parada.Estado;
+                }
+                else
+                {
+                    viaje = orden.IdRuta > 0 ? "Sin viaje" : "—";
+                }
+            }
+            catch (Exception ex)
+            {
+                viaje = "No se pudo consultar el viaje: " + Libreria.MensajeError(ex);
+            }
+
+            return new[] { folio, jornada, viaje };
+        }
+
+        // " (04/11/2026 09:23)" en hora local; vacio si Unigis no trae la fecha
+        private static string ConFecha(DateTime? fechaUtc, string formato)
+        {
+            return fechaUtc.HasValue ? " (" + fechaUtc.Value.ToLocalTime().ToString(formato, CultureInfo.InvariantCulture) + ")" : "";
+        }
+
+        // Con UseWaitCursor = false Windows deja el cursor de espera hasta que se mueve el mouse. Asignar el cursor del formulario
+        // le manda WM_SETCURSOR y lo cambia en ese momento
+        private void QuitarCursorEspera()
+        {
+            UseWaitCursor = false;
+            Cursor = Cursors.Default;
         }
 
         private static bool Excluido(string codEstab)

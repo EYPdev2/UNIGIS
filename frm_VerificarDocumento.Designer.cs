@@ -55,7 +55,15 @@
             this.col_CantidadEmb = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.col_Aparece = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.col_Razon = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.grp_Unigis = new System.Windows.Forms.GroupBox();
+            this.lbl_UnigisFolioTitulo = new System.Windows.Forms.Label();
+            this.lbl_UnigisFolio = new System.Windows.Forms.Label();
+            this.lbl_UnigisJornadaTitulo = new System.Windows.Forms.Label();
+            this.lbl_UnigisJornada = new System.Windows.Forms.Label();
+            this.lbl_UnigisViajeTitulo = new System.Windows.Forms.Label();
+            this.lbl_UnigisViaje = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.dgv_Resultado)).BeginInit();
+            this.grp_Unigis.SuspendLayout();
             this.SuspendLayout();
             //
             // lbl_Establecimiento
@@ -271,6 +279,85 @@
             this.col_Razon.Name = "col_Razon";
             this.col_Razon.ReadOnly = true;
             //
+            // grp_Unigis
+            //
+            this.grp_Unigis.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.grp_Unigis.Controls.Add(this.lbl_UnigisFolioTitulo);
+            this.grp_Unigis.Controls.Add(this.lbl_UnigisFolio);
+            this.grp_Unigis.Controls.Add(this.lbl_UnigisJornadaTitulo);
+            this.grp_Unigis.Controls.Add(this.lbl_UnigisJornada);
+            this.grp_Unigis.Controls.Add(this.lbl_UnigisViajeTitulo);
+            this.grp_Unigis.Controls.Add(this.lbl_UnigisViaje);
+            this.grp_Unigis.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.grp_Unigis.ForeColor = System.Drawing.Color.White;
+            this.grp_Unigis.Location = new System.Drawing.Point(585, 4);
+            this.grp_Unigis.Name = "grp_Unigis";
+            this.grp_Unigis.Size = new System.Drawing.Size(403, 107);
+            this.grp_Unigis.TabIndex = 10;
+            this.grp_Unigis.TabStop = false;
+            this.grp_Unigis.Text = "UNIGIS";
+            //
+            // lbl_UnigisFolioTitulo
+            //
+            this.lbl_UnigisFolioTitulo.AutoSize = true;
+            this.lbl_UnigisFolioTitulo.Location = new System.Drawing.Point(10, 25);
+            this.lbl_UnigisFolioTitulo.Name = "lbl_UnigisFolioTitulo";
+            this.lbl_UnigisFolioTitulo.Size = new System.Drawing.Size(45, 16);
+            this.lbl_UnigisFolioTitulo.TabIndex = 0;
+            this.lbl_UnigisFolioTitulo.Text = "Folio:";
+            //
+            // lbl_UnigisFolio
+            //
+            this.lbl_UnigisFolio.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lbl_UnigisFolio.AutoEllipsis = true;
+            this.lbl_UnigisFolio.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbl_UnigisFolio.Location = new System.Drawing.Point(84, 25);
+            this.lbl_UnigisFolio.Name = "lbl_UnigisFolio";
+            this.lbl_UnigisFolio.Size = new System.Drawing.Size(311, 18);
+            this.lbl_UnigisFolio.TabIndex = 1;
+            //
+            // lbl_UnigisJornadaTitulo
+            //
+            this.lbl_UnigisJornadaTitulo.AutoSize = true;
+            this.lbl_UnigisJornadaTitulo.Location = new System.Drawing.Point(10, 53);
+            this.lbl_UnigisJornadaTitulo.Name = "lbl_UnigisJornadaTitulo";
+            this.lbl_UnigisJornadaTitulo.Size = new System.Drawing.Size(68, 16);
+            this.lbl_UnigisJornadaTitulo.TabIndex = 2;
+            this.lbl_UnigisJornadaTitulo.Text = "Jornada:";
+            //
+            // lbl_UnigisJornada
+            //
+            this.lbl_UnigisJornada.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lbl_UnigisJornada.AutoEllipsis = true;
+            this.lbl_UnigisJornada.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbl_UnigisJornada.Location = new System.Drawing.Point(84, 53);
+            this.lbl_UnigisJornada.Name = "lbl_UnigisJornada";
+            this.lbl_UnigisJornada.Size = new System.Drawing.Size(311, 18);
+            this.lbl_UnigisJornada.TabIndex = 3;
+            //
+            // lbl_UnigisViajeTitulo
+            //
+            this.lbl_UnigisViajeTitulo.AutoSize = true;
+            this.lbl_UnigisViajeTitulo.Location = new System.Drawing.Point(10, 81);
+            this.lbl_UnigisViajeTitulo.Name = "lbl_UnigisViajeTitulo";
+            this.lbl_UnigisViajeTitulo.Size = new System.Drawing.Size(47, 16);
+            this.lbl_UnigisViajeTitulo.TabIndex = 4;
+            this.lbl_UnigisViajeTitulo.Text = "Viaje:";
+            //
+            // lbl_UnigisViaje
+            //
+            this.lbl_UnigisViaje.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lbl_UnigisViaje.AutoEllipsis = true;
+            this.lbl_UnigisViaje.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbl_UnigisViaje.Location = new System.Drawing.Point(84, 81);
+            this.lbl_UnigisViaje.Name = "lbl_UnigisViaje";
+            this.lbl_UnigisViaje.Size = new System.Drawing.Size(311, 18);
+            this.lbl_UnigisViaje.TabIndex = 5;
+            //
             // frm_VerificarDocumento
             //
             this.AcceptButton = this.btn_Verificar;
@@ -278,6 +365,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.ClientSize = new System.Drawing.Size(1000, 560);
+            this.Controls.Add(this.grp_Unigis);
             this.Controls.Add(this.btn_Limpiar);
             this.Controls.Add(this.dgv_Resultado);
             this.Controls.Add(this.lbl_Mercancia);
@@ -292,6 +380,8 @@
             this.Text = "Verificar Documento";
             this.Load += new System.EventHandler(this.frm_VerificarDocumento_Load);
             ((System.ComponentModel.ISupportInitialize)(this.dgv_Resultado)).EndInit();
+            this.grp_Unigis.ResumeLayout(false);
+            this.grp_Unigis.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -317,5 +407,12 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn col_CantidadEmb;
         private System.Windows.Forms.DataGridViewTextBoxColumn col_Aparece;
         private System.Windows.Forms.DataGridViewTextBoxColumn col_Razon;
+        private System.Windows.Forms.GroupBox grp_Unigis;
+        private System.Windows.Forms.Label lbl_UnigisFolioTitulo;
+        private System.Windows.Forms.Label lbl_UnigisFolio;
+        private System.Windows.Forms.Label lbl_UnigisJornadaTitulo;
+        private System.Windows.Forms.Label lbl_UnigisJornada;
+        private System.Windows.Forms.Label lbl_UnigisViajeTitulo;
+        private System.Windows.Forms.Label lbl_UnigisViaje;
     }
 }
